@@ -85,5 +85,5 @@ const (
 )
 
 type Renderer interface {
-	Render(s State)
+	Render()
 }

@@ -2,7 +2,6 @@ package renderer
 
 import (
 	"log"
-	"time"
 
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 	"github.com/David-The-Programmer/go-tetromino/engine"
@@ -12,9 +11,10 @@ import (
 
 type renderer struct {
 	screen tcell.Screen
+    engine gotetromino.Engine
 }
 
-func New() *renderer {
+func New(e gotetromino.Engine) *renderer {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Panic(err)
@@ -26,12 +26,14 @@ func New() *renderer {
 	screen.DisableMouse()
 	return &renderer{
 		screen: screen,
+        engine: e,
 	}
 }
 
-func (r *renderer) Render(s gotetromino.State) {
+func (r *renderer) Render() {
 	defer r.screen.Fini()
 	for {
+        s := r.engine.State()
 		r.screen.Clear()
         // render matrix
 		for row := 0; row < len(s.Matrix); row++ {
@@ -52,9 +54,10 @@ func (r *renderer) Render(s gotetromino.State) {
 
             }
         }
-
 		r.screen.Show()
-        time.Sleep(time.Second)
-        break
+        if s.Over {
+            break
+        }
+        r.engine.Step()
 	}
 }

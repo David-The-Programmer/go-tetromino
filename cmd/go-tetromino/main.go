@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-    r := renderer.New()
     e := engine.New(20, 10)
-    r.Render(e.State())
+    r := renderer.New(e)
+    r.Render()
 }
