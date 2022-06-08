@@ -14,7 +14,7 @@ type renderer struct {
     engine gotetromino.Engine
 }
 
-func New(e gotetromino.Engine) *renderer {
+func New(e gotetromino.Engine) gotetromino.Renderer {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Panic(err)

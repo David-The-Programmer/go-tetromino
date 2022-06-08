@@ -12,7 +12,7 @@ type engine struct {
 	ticker *time.Ticker
 }
 
-func New(numRows int, numCols int) *engine {
+func New(numRows int, numCols int) gotetromino.Engine {
 	e := engine{}
 	// init matrix as space
 	for r := 0; r < numRows; r++ {
@@ -43,7 +43,9 @@ func New(numRows int, numCols int) *engine {
 	// set ticker to tick every 150ms
 	e.ticker = time.NewTicker(150 * time.Millisecond)
 
-	return &e
+    var coreEngine gotetromino.Engine = &e
+
+	return coreEngine
 }
 
 func (e *engine) Step() {
