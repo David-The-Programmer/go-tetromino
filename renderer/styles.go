@@ -7,7 +7,7 @@ import (
 )
 
 var blockCodeToColour = map[engine.Block]tcell.Color{
-	engine.Space:      tcell.ColorBlack,
+	engine.Space:      tcell.ColorDefault,
 	engine.Boundary:   tcell.ColorWhite,
 	engine.ITetromino: tcell.ColorDarkCyan,
 	engine.JTetromino: tcell.ColorBlue,
@@ -18,11 +18,28 @@ var blockCodeToColour = map[engine.Block]tcell.Color{
 	engine.ZTetromino: tcell.ColorRed,
 }
 
-func ColourForBlock(b engine.Block) tcell.Color {
+func colourForBlock(b engine.Block) tcell.Color {
     if _, ok := blockCodeToColour[b]; !ok {
         return tcell.ColorDefault
     }
 	return blockCodeToColour[b]
 }
 
-// TODO: Put map to map between tetris block codes (individual squares making up everything) to character (rune)
+var blockCodeToChar = map[engine.Block]rune{
+	engine.Space:      ' ',
+	engine.Boundary:   'x',
+	engine.ITetromino: 'I',
+	engine.JTetromino: 'J',
+	engine.LTetromino: 'L',
+	engine.OTetromino: 'O',
+	engine.STetromino: 'S',
+	engine.TTetromino: 'T',
+	engine.ZTetromino: 'Z',
+}
+
+func charForBlock(b engine.Block) rune {
+    if _, ok := blockCodeToChar[b]; !ok {
+        return ' '
+    }
+	return blockCodeToChar[b]
+}

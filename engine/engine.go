@@ -9,20 +9,6 @@ type engine struct {
 	player gotetromino.Player
 }
 
-type Block int
-
-const (
-	Space Block = iota
-	Boundary
-    ITetromino
-    JTetromino
-    LTetromino
-    OTetromino
-    STetromino
-    TTetromino
-    ZTetromino
-)
-
 func New(numRows int, numCols int) *engine {
 	e := engine{}
     // init matrix as space
@@ -44,7 +30,12 @@ func New(numRows int, numCols int) *engine {
         e.state.Matrix[len(e.state.Matrix)-1][i] = int(Boundary)
     }
 
-	// TODO: Set CurrentTetromino & its position
+	// set current tetromino & its position
+    e.state.CurrentTetromino = randTetromino()
+    e.state.CurrentTetrominoPos = []int{
+        (len(e.state.Matrix) - 2 - len(e.state.CurrentTetromino)) / 2,
+        (len(e.state.Matrix[0]) - 2 - len(e.state.CurrentTetromino)) / 2,
+    }
 
 	return &e
 }
