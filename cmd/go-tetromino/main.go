@@ -1,12 +1,10 @@
 package main
 
 import (
-	"github.com/David-The-Programmer/go-tetromino/engine"
-	"github.com/David-The-Programmer/go-tetromino/renderer"
+	"github.com/David-The-Programmer/go-tetromino/game"
 )
 
 func main() {
-    e := engine.New(20, 10)
-    r := renderer.New(e)
-    r.Render()
+    tetrisGame := game.New()
+    tetrisGame.Run()
 }

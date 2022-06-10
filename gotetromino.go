@@ -1,14 +1,14 @@
 package gotetromino
 
+type Game interface {
+    // Run runs tetris
+    Run()
+}
+
 type Engine interface {
-	// Step increments state of game to the next frame, based on player action & in-game movements for the current frame
-	Step()
-	// Reset sets the state of the game back to the first frame of the game
+    Start(a <-chan Action) <-chan State
+    Stop()
 	Reset()
-	// State returns the state of the game at the current frame
-	State() State
-	// Player sets the player to retrieve Actions from
-	Player(p Player)
 }
 
 // Main game loop
@@ -71,10 +71,6 @@ type State struct {
 	Over                bool
 }
 
-type Player interface {
-	Action() Action
-}
-
 type Action int
 
 const (
@@ -85,5 +81,5 @@ const (
 )
 
 type Renderer interface {
-	Render()
+	Render(s State)
 }
