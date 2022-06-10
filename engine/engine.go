@@ -38,6 +38,7 @@ func New(numRows int, numCols int) gotetromino.Engine {
 		e.state.Matrix[len(e.state.Matrix)-1][i] = int(Boundary)
 	}
 	// set current tetromino & its position
+    // TODO: Adjust position to be higher and more ideal
 	e.state.CurrentTetromino = randTetromino()
 	e.state.CurrentTetrominoPos = []int{
 		(len(e.state.Matrix) - 2 - len(e.state.CurrentTetromino)) / 2,
@@ -96,19 +97,20 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 					e.mutex.Unlock()
 					time.Sleep(delay)
 					e.stateChange <- e.state
+                    // TODO: Complete logic to drop tetromino
 					// case gotetromino.Rotate:
 				}
 			}
 		}
 	}()
-	// TODO: Replace timer based game over for actual game over
-	go func() {
-		time.Sleep(2 * time.Second)
-		e.mutex.Lock()
-		e.state.Over = true
-		e.mutex.Unlock()
-		e.stop <- e.state.Over
-	}()
+	// TODO: Replace timer based game over for actual game over, when game over, auto stop the engine
+	// go func() {
+	// 	time.Sleep(1 * time.Second)
+	// 	e.mutex.Lock()
+	// 	e.state.Over = true
+	// 	e.mutex.Unlock()
+	// 	e.stop <- e.state.Over
+	// }()
 
 	return e.stateChange
 }

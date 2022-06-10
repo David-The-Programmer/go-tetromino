@@ -79,6 +79,12 @@ const (
 	Rotate
 )
 
+type Interaction int
+
+const (
+    Exit Interaction = iota
+)
+
 type Renderer interface {
 	Render(s State)
 	Stop()
@@ -88,7 +94,12 @@ type Player interface {
     Action() <-chan Action
 }
 
+type User interface {
+    Player
+    Interaction() <-chan Interaction
+}
+
 type UI interface {
     Renderer
-    Player
+    User
 }

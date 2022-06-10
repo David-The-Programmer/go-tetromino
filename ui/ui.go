@@ -4,15 +4,15 @@ import (
 	"log"
 
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
-	"github.com/David-The-Programmer/go-tetromino/player"
+	"github.com/David-The-Programmer/go-tetromino/user"
 	"github.com/David-The-Programmer/go-tetromino/renderer"
+
 	"github.com/gdamore/tcell/v2"
 )
 
 type ui struct {
-	screen tcell.Screen
     renderer gotetromino.Renderer
-    player gotetromino.Player
+    user gotetromino.User
 }
 
 func New() gotetromino.UI {
@@ -24,11 +24,10 @@ func New() gotetromino.UI {
 		log.Panic(err)
 	}
     r := renderer.New(s)
-    p := player.New(s)
+    u := user.New(s)
     var ui gotetromino.UI = &ui{
-        screen: s,
         renderer: r,
-        player: p,
+        user: u,
     }
     return ui
 }
@@ -37,10 +36,14 @@ func (ui *ui) Render(s gotetromino.State) {
     ui.renderer.Render(s)
 }
 
-func (ui *ui) Action() <-chan gotetromino.Action {
-    return ui.player.Action()
-}
-
 func (ui *ui) Stop() {
     ui.renderer.Stop()
+}
+
+func (ui *ui) Action() <-chan gotetromino.Action {
+    return ui.user.Action()
+}
+
+func (ui *ui) Interaction() <-chan gotetromino.Interaction {
+    return ui.user.Interaction()
 }
