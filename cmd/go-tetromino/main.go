@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-    tetrisGame := game.New()
-    tetrisGame.Run()
+	tetrisGame := game.New()
+	tetrisGame.Run()
 }

@@ -1,13 +1,13 @@
 package gotetromino
 
 type Game interface {
-    // Run runs tetris
-    Run()
+	// Run runs tetris
+	Run()
 }
 
 type Engine interface {
-    Start(a <-chan Action) <-chan State
-    Stop()
+	Start(a <-chan Action) <-chan State
+	Stop()
 	Reset()
 }
 
@@ -82,4 +82,5 @@ const (
 
 type Renderer interface {
 	Render(s State)
+	Stop()
 }

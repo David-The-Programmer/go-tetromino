@@ -55,15 +55,15 @@ var zTetrominoMatrix = [][]int{
 }
 
 func randTetromino() [][]int {
-    t := [][][]int{
-        iTetrominoMatrix,
-        jTetrominoMatrix,
-        lTetrominoMatrix,
-        oTetrominoMatrix,
-        sTetrominoMatrix,
-        tTetrominoMatrix,
-        zTetrominoMatrix,
-    }
-    rand.Seed(time.Now().Unix())
-    return t[rand.Intn(len(t))]
+	t := [][][]int{
+		iTetrominoMatrix,
+		jTetrominoMatrix,
+		lTetrominoMatrix,
+		oTetrominoMatrix,
+		sTetrominoMatrix,
+		tTetrominoMatrix,
+		zTetrominoMatrix,
+	}
+	rand.Seed(time.Now().Unix())
+	return t[rand.Intn(len(t))]
 }

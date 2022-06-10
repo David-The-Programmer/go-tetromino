@@ -19,9 +19,9 @@ var blockCodeToColour = map[engine.Block]tcell.Color{
 }
 
 func colourForBlock(b engine.Block) tcell.Color {
-    if _, ok := blockCodeToColour[b]; !ok {
-        return tcell.ColorDefault
-    }
+	if _, ok := blockCodeToColour[b]; !ok {
+		return tcell.ColorDefault
+	}
 	return blockCodeToColour[b]
 }
 
@@ -38,8 +38,8 @@ var blockCodeToChar = map[engine.Block]rune{
 }
 
 func charForBlock(b engine.Block) rune {
-    if _, ok := blockCodeToChar[b]; !ok {
-        return ' '
-    }
+	if _, ok := blockCodeToChar[b]; !ok {
+		return ' '
+	}
 	return blockCodeToChar[b]
 }

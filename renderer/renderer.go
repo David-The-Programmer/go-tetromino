@@ -11,6 +11,7 @@ import (
 
 type renderer struct {
 	screen tcell.Screen
+	stop   chan bool
 }
 
 func New() gotetromino.Renderer {
@@ -50,4 +51,8 @@ func (r *renderer) Render(s gotetromino.State) {
 		}
 	}
 	r.screen.Show()
+}
+
+func (r *renderer) Stop() {
+	r.screen.Fini()
 }

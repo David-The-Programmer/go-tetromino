@@ -29,6 +29,7 @@ func (g *game) Run() {
 		state := <-stateChanges
 		g.renderer.Render(state)
 		if state.Over {
+			g.renderer.Stop()
 			break
 		}
 	}
