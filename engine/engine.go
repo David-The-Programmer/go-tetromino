@@ -53,8 +53,9 @@ func New(numRows int, numCols int) gotetromino.Engine {
 // receives a channel to receive actions and returns a channel to receive State when it changes
 func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 	// need delay to simulate moving onto next frame for renderer
-	delay := 200 * time.Millisecond
-	e.ticker = time.NewTicker(delay)
+	// TODO: Need to have different delays between falling and movement of pieces
+	delay := 100 * time.Millisecond
+	e.ticker = time.NewTicker(3 * delay)
 	e.action = a
 	e.stateChange = make(chan gotetromino.State)
 	e.stop = make(chan bool)
@@ -75,32 +76,32 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 				e.state.CurrentTetrominoPos[0] += 1
 				e.mutex.Unlock()
 				e.stateChange <- e.state
-				// case action := <-e.action:
-				// 	// set the change in position of CurrentTetromino according to action
-				// 	switch action {
-				// 	// case gotetromino.Drop:
-				// 	// TODO: Complete logic to drop tetromino
-				// 	// e.mutex.Lock()
-				// 	// e.state.CurrentTetrominoPos[0] += 1
-				// 	// e.mutex.Unlock()
-				// 	case gotetromino.Left:
-				// 		e.mutex.Lock()
-				// 		e.state.CurrentTetrominoPos[1] += -1
-				// 		e.mutex.Unlock()
-				//                  time.Sleep(delay)
-				// 		e.stateChange <- e.state
-				// 	case gotetromino.Right:
-				// 		e.mutex.Lock()
-				// 		e.state.CurrentTetrominoPos[1] += 1
-				// 		e.mutex.Unlock()
-				//                  time.Sleep(delay)
-				// 		e.stateChange <- e.state
-				// 		// case gotetromino.Rotate:
-				// 	}
+			case action := <-e.action:
+				// set the change in position of CurrentTetromino according to action
+				switch action {
+				// case gotetromino.Drop:
+				// TODO: Complete logic to drop tetromino
+				// e.mutex.Lock()
+				// e.state.CurrentTetrominoPos[0] += 1
+				// e.mutex.Unlock()
+				case gotetromino.Left:
+					e.mutex.Lock()
+					e.state.CurrentTetrominoPos[1] += -1
+					e.mutex.Unlock()
+					time.Sleep(delay)
+					e.stateChange <- e.state
+				case gotetromino.Right:
+					e.mutex.Lock()
+					e.state.CurrentTetrominoPos[1] += 1
+					e.mutex.Unlock()
+					time.Sleep(delay)
+					e.stateChange <- e.state
+					// case gotetromino.Rotate:
+				}
 			}
 		}
 	}()
-	// TODO: Stop time ticker and go routine
+	// TODO: Replace timer based game over for actual game over
 	go func() {
 		time.Sleep(2 * time.Second)
 		e.mutex.Lock()

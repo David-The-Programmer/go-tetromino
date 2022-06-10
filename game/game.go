@@ -3,33 +3,32 @@ package game
 import (
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 	"github.com/David-The-Programmer/go-tetromino/engine"
-	"github.com/David-The-Programmer/go-tetromino/renderer"
+	"github.com/David-The-Programmer/go-tetromino/ui"
 )
 
 type game struct {
-	engine   gotetromino.Engine
-	renderer gotetromino.Renderer
+	engine gotetromino.Engine
+	ui     gotetromino.UI
 }
 
 func New() gotetromino.Game {
 	e := engine.New(20, 10)
-	r := renderer.New()
+	ui := ui.New()
 	g := game{
-		engine:   e,
-		renderer: r,
+		engine: e,
+		ui:     ui,
 	}
 	var tetrisGame gotetromino.Game = &g
 	return tetrisGame
 }
 
 func (g *game) Run() {
-	action := make(chan gotetromino.Action)
-	stateChanges := g.engine.Start(action)
+	stateChanges := g.engine.Start(g.ui.Action())
 	for {
 		state := <-stateChanges
-		g.renderer.Render(state)
+		g.ui.Render(state)
 		if state.Over {
-			g.renderer.Stop()
+			g.ui.Stop()
 			break
 		}
 	}

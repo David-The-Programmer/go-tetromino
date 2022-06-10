@@ -1,7 +1,6 @@
 package renderer
 
 import (
-	"log"
 
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 	"github.com/David-The-Programmer/go-tetromino/engine"
@@ -11,21 +10,13 @@ import (
 
 type renderer struct {
 	screen tcell.Screen
-	stop   chan bool
 }
 
-func New() gotetromino.Renderer {
-	screen, err := tcell.NewScreen()
-	if err != nil {
-		log.Panic(err)
-	}
-	if err = screen.Init(); err != nil {
-		log.Panic(err)
-	}
-	screen.HideCursor()
-	screen.DisableMouse()
+func New(s tcell.Screen) gotetromino.Renderer {
+	s.HideCursor()
+	s.DisableMouse()
 	return &renderer{
-		screen: screen,
+		screen: s,
 	}
 }
 

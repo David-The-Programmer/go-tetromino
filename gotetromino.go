@@ -1,7 +1,6 @@
 package gotetromino
 
 type Game interface {
-	// Run runs tetris
 	Run()
 }
 
@@ -83,4 +82,13 @@ const (
 type Renderer interface {
 	Render(s State)
 	Stop()
+}
+
+type Player interface {
+    Action() <-chan Action
+}
+
+type UI interface {
+    Renderer
+    Player
 }
