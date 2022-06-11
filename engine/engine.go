@@ -40,10 +40,7 @@ func New(numRows int, numCols int) gotetromino.Engine {
 	// set current tetromino & its position
 	// TODO: Adjust position to be higher and more ideal
 	e.state.CurrentTetromino = randTetromino()
-	e.state.CurrentTetrominoPos = []int{
-		(len(e.state.Matrix) - 2 - len(e.state.CurrentTetromino)) / 2,
-		(len(e.state.Matrix[0]) - 2 - len(e.state.CurrentTetromino)) / 2,
-	}
+	e.state.CurrentTetrominoPos = tetrominoStartPos(e.state.CurrentTetromino, e.state.Matrix)
 	e.mutex = &sync.Mutex{}
 
 	var coreEngine gotetromino.Engine = &e
@@ -80,7 +77,14 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 					e.state.CurrentTetrominoPos = newPos
 					e.mutex.Unlock()
 					e.stateChange <- e.state
+					continue
 				}
+                // lock tetromino into matrix once collision occurs
+				e.mutex.Lock()
+				e.state.Matrix = lockTetromino(e.state.CurrentTetromino, e.state.CurrentTetrominoPos, e.state.Matrix)
+				e.state.CurrentTetromino = randTetromino()
+				e.state.CurrentTetrominoPos = tetrominoStartPos(e.state.CurrentTetromino, e.state.Matrix)
+				e.mutex.Unlock()
 			case action := <-e.action:
 				// set the change in position of CurrentTetromino according to action
 				switch action {
@@ -109,7 +113,7 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 						time.Sleep(delay)
 						e.stateChange <- e.state
 					}
-					// TODO: Complete logic to drop tetromino
+					// TODO: Complete logic to rotate tetromino
 					// case gotetromino.Rotate:
 				}
 			}
@@ -150,9 +154,38 @@ func collision(tetromino [][]int, tetrominoPos []int, matrix [][]int) bool {
 	return false
 }
 
-// TODO: Finish fetching of new tetromino
-// TODO: Finish adding of tetromino to matrix
+// lockTetromino locks the tetromino in place by updating it in the matrix
+func lockTetromino(tetromino [][]int, tetrominoPos []int, matrix [][]int) [][]int {
+	x := tetrominoPos[1]
+	y := tetrominoPos[0]
+	for i := 0; i < len(tetromino); i++ {
+		for j := 0; j < len(tetromino[i]); j++ {
+			matrixRow := y + i
+			matrixCol := x + j
+			if matrixRow > len(matrix)-1 || matrixCol > len(matrix[0])-1 {
+				continue
+			}
 
+			// only override what space block with tetromino block
+			if matrix[matrixRow][matrixCol] == int(Space) {
+				matrix[matrixRow][matrixCol] = tetromino[i][j]
+			}
+
+		}
+	}
+	return matrix
+
+}
+
+// tetrominoStartPos returns the starting position of a tetromino
+func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
+	return []int{
+		len(tetromino),
+		(len(matrix[0]) - 2 - len(tetromino)) / 2,
+	}
+}
+
+// TODO: Finish clearing of tetromino blocks
 // TODO: Finish rotation of tetromino
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field

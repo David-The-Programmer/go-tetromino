@@ -20,7 +20,6 @@ func New(s tcell.Screen) gotetromino.Renderer {
 }
 
 func (r *renderer) Render(s gotetromino.State) {
-	r.screen.Clear()
 	// render matrix
 	for row := 0; row < len(s.Matrix); row++ {
 		for col := 0; col < len(s.Matrix[row]); col++ {
@@ -37,11 +36,8 @@ func (r *renderer) Render(s gotetromino.State) {
 			// only override rendering what is a space block
 			matrixRow := y + row
 			matrixCol := x + col
-			if matrixRow > len(s.Matrix)-1 {
-				matrixRow = len(s.Matrix) - 1
-			}
-			if matrixCol > len(s.Matrix[0])-1 {
-				matrixCol = len(s.Matrix[0]) - 1
+			if matrixRow > len(s.Matrix)-1 || matrixCol > len(s.Matrix[0])-1 {
+                continue
 			}
 			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
 				st := tcell.StyleDefault
