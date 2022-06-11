@@ -79,7 +79,7 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 					e.stateChange <- e.state
 					continue
 				}
-                // lock tetromino into matrix once collision occurs
+				// lock tetromino into matrix once collision occurs
 				e.mutex.Lock()
 				e.state.Matrix = lockTetromino(e.state.CurrentTetromino, e.state.CurrentTetrominoPos, e.state.Matrix)
 				e.state.CurrentTetromino = randTetromino()
@@ -88,11 +88,20 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 			case action := <-e.action:
 				// set the change in position of CurrentTetromino according to action
 				switch action {
-				// case gotetromino.Drop:
-				// TODO: Complete logic to drop tetromino
-				// e.mutex.Lock()
-				// e.state.CurrentTetrominoPos[0] += 1
-				// e.mutex.Unlock()
+				case gotetromino.Drop:
+					newPos := append([]int{}, e.state.CurrentTetrominoPos...)
+					for !collision(e.state.CurrentTetromino, newPos, e.state.Matrix) {
+						newPos[0] += 1
+					}
+					newPos[0] -= 1
+					e.mutex.Lock()
+					// lock tetromino into matrix once collision occurs
+					e.state.Matrix = lockTetromino(e.state.CurrentTetromino, newPos, e.state.Matrix)
+					e.state.CurrentTetromino = randTetromino()
+					e.state.CurrentTetrominoPos = tetrominoStartPos(e.state.CurrentTetromino, e.state.Matrix)
+					e.mutex.Unlock()
+					time.Sleep(delay)
+					e.stateChange <- e.state
 				case gotetromino.Left:
 					newPos := append([]int{}, e.state.CurrentTetrominoPos...)
 					newPos[1] += -1

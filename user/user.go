@@ -27,6 +27,8 @@ func New(s tcell.Screen) gotetromino.User {
 			switch ev := ev.(type) {
 			case *tcell.EventKey:
 				switch ev.Key() {
+				case tcell.KeyDown:
+					u.action <- gotetromino.Drop
 				case tcell.KeyLeft:
 					u.action <- gotetromino.Left
 				case tcell.KeyRight:
