@@ -38,7 +38,7 @@ func New(numRows int, numCols int) gotetromino.Engine {
 		e.state.Matrix[len(e.state.Matrix)-1][i] = int(Boundary)
 	}
 	// set current tetromino & its position
-    // TODO: Adjust position to be higher and more ideal
+	// TODO: Adjust position to be higher and more ideal
 	e.state.CurrentTetromino = randTetromino()
 	e.state.CurrentTetrominoPos = []int{
 		(len(e.state.Matrix) - 2 - len(e.state.CurrentTetromino)) / 2,
@@ -73,10 +73,14 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 				return
 			case <-e.ticker.C:
 				// make current tetromino fall every 150ms
-				e.mutex.Lock()
-				e.state.CurrentTetrominoPos[0] += 1
-				e.mutex.Unlock()
-				e.stateChange <- e.state
+				newPos := append([]int{}, e.state.CurrentTetrominoPos...)
+				newPos[0] += 1
+				if !collision(e.state.CurrentTetromino, newPos, e.state.Matrix) {
+					e.mutex.Lock()
+					e.state.CurrentTetrominoPos = newPos
+					e.mutex.Unlock()
+					e.stateChange <- e.state
+				}
 			case action := <-e.action:
 				// set the change in position of CurrentTetromino according to action
 				switch action {
@@ -86,18 +90,26 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 				// e.state.CurrentTetrominoPos[0] += 1
 				// e.mutex.Unlock()
 				case gotetromino.Left:
-					e.mutex.Lock()
-					e.state.CurrentTetrominoPos[1] += -1
-					e.mutex.Unlock()
-					time.Sleep(delay)
-					e.stateChange <- e.state
+					newPos := append([]int{}, e.state.CurrentTetrominoPos...)
+					newPos[1] += -1
+					if !collision(e.state.CurrentTetromino, newPos, e.state.Matrix) {
+						e.mutex.Lock()
+						e.state.CurrentTetrominoPos = newPos
+						e.mutex.Unlock()
+						time.Sleep(delay)
+						e.stateChange <- e.state
+					}
 				case gotetromino.Right:
-					e.mutex.Lock()
-					e.state.CurrentTetrominoPos[1] += 1
-					e.mutex.Unlock()
-					time.Sleep(delay)
-					e.stateChange <- e.state
-                    // TODO: Complete logic to drop tetromino
+					newPos := append([]int{}, e.state.CurrentTetrominoPos...)
+					newPos[1] += 1
+					if !collision(e.state.CurrentTetromino, newPos, e.state.Matrix) {
+						e.mutex.Lock()
+						e.state.CurrentTetrominoPos = newPos
+						e.mutex.Unlock()
+						time.Sleep(delay)
+						e.stateChange <- e.state
+					}
+					// TODO: Complete logic to drop tetromino
 					// case gotetromino.Rotate:
 				}
 			}
@@ -123,3 +135,24 @@ func (e *engine) Stop() {
 // TODO: Finish Reset
 // Reset sets the state of the game back its inital state (before Start was invoked)
 func (e *engine) Reset() {}
+
+// collision returns true if the blocks in the matrix that overlap with the blocks tetromino are not space
+func collision(tetromino [][]int, tetrominoPos []int, matrix [][]int) bool {
+	x := tetrominoPos[1]
+	y := tetrominoPos[0]
+	for i := 0; i < len(tetromino); i++ {
+		for j := 0; j < len(tetromino[i]); j++ {
+			if tetromino[i][j] != int(Space) && matrix[y+i][x+j] != int(Space) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// TODO: Finish fetching of new tetromino
+// TODO: Finish adding of tetromino to matrix
+
+// TODO: Finish rotation of tetromino
+
+// TODO: Make comment terms that relate to the code be of the specific constant/field

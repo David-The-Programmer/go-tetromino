@@ -1,7 +1,6 @@
 package renderer
 
 import (
-
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 	"github.com/David-The-Programmer/go-tetromino/engine"
 
@@ -35,9 +34,20 @@ func (r *renderer) Render(s gotetromino.State) {
 	y := s.CurrentTetrominoPos[0]
 	for row := 0; row < len(s.CurrentTetromino); row++ {
 		for col := 0; col < len(s.CurrentTetromino[row]); col++ {
-			st := tcell.StyleDefault
-			st = st.Foreground(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
-			r.screen.SetContent(x+col, y+row, charForBlock(engine.Block(s.CurrentTetromino[row][col])), nil, st)
+			// only override rendering what is a space block
+			matrixRow := y + row
+			matrixCol := x + col
+			if matrixRow > len(s.Matrix)-1 {
+				matrixRow = len(s.Matrix) - 1
+			}
+			if matrixCol > len(s.Matrix[0])-1 {
+				matrixCol = len(s.Matrix[0]) - 1
+			}
+			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
+				st := tcell.StyleDefault
+				st = st.Foreground(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
+				r.screen.SetContent(x+col, y+row, charForBlock(engine.Block(s.CurrentTetromino[row][col])), nil, st)
+			}
 
 		}
 	}
