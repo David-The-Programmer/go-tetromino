@@ -37,7 +37,7 @@ func (r *renderer) Render(s gotetromino.State) {
 			matrixRow := y + row
 			matrixCol := x + col
 			if matrixRow > len(s.Matrix)-1 || matrixCol > len(s.Matrix[0])-1 {
-                continue
+				continue
 			}
 			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
 				st := tcell.StyleDefault

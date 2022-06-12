@@ -82,7 +82,7 @@ const (
 type Interaction int
 
 const (
-    Exit Interaction = iota
+	Exit Interaction = iota
 )
 
 type Renderer interface {
@@ -91,15 +91,15 @@ type Renderer interface {
 }
 
 type Player interface {
-    Action() <-chan Action
+	Action() <-chan Action
 }
 
 type User interface {
-    Player
-    Interaction() <-chan Interaction
+	Player
+	Interaction() <-chan Interaction
 }
 
 type UI interface {
-    Renderer
-    User
+	Renderer
+	User
 }

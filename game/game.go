@@ -29,14 +29,14 @@ func (g *game) Run() {
 	for {
 		select {
 		case i := <-userInteractions:
-            // stop engine and quit UI if user signals to exit
+			// stop engine and quit UI if user signals to exit
 			if i == gotetromino.Exit {
 				g.engine.Stop()
 				g.ui.Stop()
-                return
+				return
 			}
 		case state := <-stateChanges:
-            // render whenever a change in state occurs
+			// render whenever a change in state occurs
 			g.ui.Render(state)
 		}
 	}
