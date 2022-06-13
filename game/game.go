@@ -12,7 +12,7 @@ type game struct {
 }
 
 func New() gotetromino.Game {
-	e := engine.New(20, 10)
+	e := engine.New(20, 20)
 	ui := ui.New()
 	g := game{
 		engine: e,
@@ -35,6 +35,9 @@ func (g *game) Run() {
 				g.engine.Stop()
 				g.ui.Stop()
 				return
+			}
+			if i == gotetromino.Restart && state.Over {
+				g.engine.Reset()
 			}
 		case state = <-stateChanges:
 			// render whenever a change in state occurs

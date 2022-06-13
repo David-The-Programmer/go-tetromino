@@ -12,30 +12,14 @@ type engine struct {
 	action      <-chan gotetromino.Action
 	stateChange chan gotetromino.State
 	ticker      *time.Ticker
+	tickerDelay time.Duration
 	stop        chan bool
 }
 
 // New returns a new instance of gotetromino.Engine
 func New(numRows int, numCols int) gotetromino.Engine {
 	e := engine{}
-	// init matrix as space
-	for r := 0; r < numRows; r++ {
-		e.state.Matrix = append(e.state.Matrix, []int{})
-		for c := 0; c < numCols; c++ {
-			e.state.Matrix[r] = append(e.state.Matrix[r], int(Space))
-		}
-	}
-	// encode boundaries into matrix
-	for i := 0; i < len(e.state.Matrix); i++ {
-		// leftmost boundary
-		e.state.Matrix[i][0] = int(Boundary)
-		// rightmost boundary
-		e.state.Matrix[i][len(e.state.Matrix[i])-1] = int(Boundary)
-	}
-	// bottom boundary
-	for i := 0; i < len(e.state.Matrix[len(e.state.Matrix)-1]); i++ {
-		e.state.Matrix[len(e.state.Matrix)-1][i] = int(Boundary)
-	}
+	e.state = emptyMatrix(e.state, numRows, numCols)
 	// set current tetromino & its position
 	// TODO: Refactor this part
 	e.state.CurrentTetromino = randTetromino()
@@ -47,11 +31,13 @@ func New(numRows int, numCols int) gotetromino.Engine {
 
 // Start runs the engine (launches internal processes)
 // receives a channel to receive actions and returns a channel to receive State when it changes
+// engine will ignore any action once gameover, and will only continue to execute actions when Reset is invoked
 func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 	// need delay to simulate moving onto next frame for renderer
 	// TODO: Need to have different delays between falling and movement of pieces
 	delay := 100 * time.Millisecond
-	e.ticker = time.NewTicker(3 * delay)
+	e.tickerDelay = 3 * delay
+	e.ticker = time.NewTicker(e.tickerDelay)
 	e.action = a
 	e.stateChange = make(chan gotetromino.State)
 	e.stop = make(chan bool)
@@ -159,9 +145,14 @@ func (e *engine) Stop() {
 	e.stop <- true
 }
 
-// TODO: Finish Reset
-// Reset sets the state of the game back its inital state (before Start was invoked)
-func (e *engine) Reset() {}
+// Reset resets the state of the game back to its initial state
+func (e *engine) Reset() {
+	e.state = spawnTetromino(e.state)
+	e.state = emptyMatrix(e.state, len(e.state.Matrix), len(e.state.Matrix[0]))
+	e.state.Over = false
+	e.state.Score = 0
+	e.ticker.Reset(e.tickerDelay)
+}
 
 // collision returns true if non-space blocks of the matrix overlap with non-space blocks of the tetromino in the given state
 func collision(s gotetromino.State) bool {
@@ -214,7 +205,34 @@ func duplicate(s gotetromino.State) gotetromino.State {
 	return state
 }
 
-// lockTetromino returns a new state that has the current tetromino locked in the matrix
+// emptyMatrix returns a new state, which comprises of the given state with an empty matrix of with numRows & numCols
+func emptyMatrix(s gotetromino.State, numRows int, numCols int) gotetromino.State {
+	matrix := [][]int{}
+	// init matrix as space
+	for r := 0; r < numRows; r++ {
+		matrix = append(matrix, []int{})
+		for c := 0; c < numCols; c++ {
+			matrix[r] = append(matrix[r], int(Space))
+		}
+	}
+	// encode boundaries into matrix
+	for i := 0; i < len(matrix); i++ {
+		// leftmost boundary
+		matrix[i][0] = int(Boundary)
+		// rightmost boundary
+		matrix[i][len(matrix[i])-1] = int(Boundary)
+	}
+	// bottom boundary
+	for i := 0; i < len(matrix[len(matrix)-1]); i++ {
+		matrix[len(matrix)-1][i] = int(Boundary)
+	}
+	state := duplicate(s)
+	state.Matrix = matrix
+	return state
+
+}
+
+// lockTetromino returns a new state, which comprises of the given state that has its current tetromino locked in the matrix
 func lockTetromino(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
 	x := state.CurrentTetrominoPos[1]
@@ -238,7 +256,7 @@ func lockTetromino(s gotetromino.State) gotetromino.State {
 
 }
 
-// moveTetromino returns a new state where the current tetromino was moved by the specified number of rows & columns
+// moveTetromino returns a new state, which comprises of the given state that has its current tetromino moved by numRows & numCols
 func moveTetromino(s gotetromino.State, numRows int, numCols int) gotetromino.State {
 	state := duplicate(s)
 	state.CurrentTetrominoPos[0] += numRows
@@ -246,7 +264,7 @@ func moveTetromino(s gotetromino.State, numRows int, numCols int) gotetromino.St
 	return state
 }
 
-// spawnTetromino returns a new state where a new tetromino is spawned
+// spawnTetromino returns a new state, which comprises of the given state that has new tetromino is spawned
 func spawnTetromino(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
 	state.CurrentTetromino = randTetromino()
@@ -262,7 +280,7 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// over returns gameover state
+// over returns a new state, which comprises of the given state that has the Over field set to true
 func over(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
 	state.Over = true

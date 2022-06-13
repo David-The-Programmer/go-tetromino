@@ -27,15 +27,20 @@ func New(s tcell.Screen) gotetromino.User {
 			switch ev := ev.(type) {
 			case *tcell.EventKey:
 				switch ev.Key() {
+				case tcell.KeyEsc:
+					u.interaction <- gotetromino.Exit
+					return
+				case tcell.KeyRune:
+					r := ev.Rune()
+					if r == 'r' {
+						u.interaction <- gotetromino.Restart
+					}
 				case tcell.KeyDown:
 					u.action <- gotetromino.Drop
 				case tcell.KeyLeft:
 					u.action <- gotetromino.Left
 				case tcell.KeyRight:
 					u.action <- gotetromino.Right
-				case tcell.KeyEsc:
-					u.interaction <- gotetromino.Exit
-					return
 				}
 			}
 		}

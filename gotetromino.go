@@ -83,6 +83,7 @@ type Interaction int
 
 const (
 	Exit Interaction = iota
+	Restart
 )
 
 type Renderer interface {
