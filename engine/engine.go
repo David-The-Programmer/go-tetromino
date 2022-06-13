@@ -19,8 +19,8 @@ func New(numRows int, numCols int) gotetromino.Engine {
 }
 
 // State returns the current game state
-func(e *engine) State() gotetromino.State {
-    return e.state
+func (e *engine) State() gotetromino.State {
+	return e.state
 }
 
 // Step updates the game state based on the given action
@@ -219,6 +219,7 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
+// TODO: Somehow shift logic of Game into U.I? such that U.I really is the U.I that the user would interact with
 // TODO: Finish clearing of tetromino blocks
 // TODO: Finish rotation of tetromino
 // TODO: Finish scoring

@@ -31,6 +31,7 @@ func (g *game) Run() {
 	actions := g.ui.Action()
 	interactions := g.ui.Interaction()
 	for {
+		g.ui.Render(g.engine.State())
 		select {
 		case i := <-interactions:
 			if i == gotetromino.Exit {
@@ -42,10 +43,8 @@ func (g *game) Run() {
 			}
 		case a := <-actions:
 			g.engine.Step(a)
-			g.ui.Render(g.engine.State())
 		case <-g.ticker.C:
 			g.engine.Step(gotetromino.SoftDrop)
-			g.ui.Render(g.engine.State())
 		}
 
 	}

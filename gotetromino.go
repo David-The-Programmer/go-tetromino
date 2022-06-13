@@ -5,18 +5,10 @@ type Game interface {
 }
 
 type Engine interface {
-    State() State
+	State() State
 	Step(a Action)
 	Reset()
 }
-
-/*
-// TODO: Abstract out all timing/animation logic to UI/renderer
-type Engine interface {
-    Step(a Action) State
-    Reset()
-}
-*/
 
 type State struct {
 	CurrentTetromino    [][]int
