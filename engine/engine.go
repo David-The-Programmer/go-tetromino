@@ -70,6 +70,7 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 					e.stateChange <- e.state
 					continue
 				}
+				s = moveTetromino(s, -1, 0)
 				// lock tetromino into matrix once collision occurs
 				s = lockTetromino(s)
 				temp := spawnTetromino(s)
