@@ -5,7 +5,8 @@ type Game interface {
 }
 
 type Engine interface {
-	Step(a Action) State
+    State() State
+	Step(a Action)
 	Reset()
 }
 

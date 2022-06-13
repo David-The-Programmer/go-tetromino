@@ -18,13 +18,17 @@ func New(numRows int, numCols int) gotetromino.Engine {
 	return coreEngine
 }
 
-// Step runs the engine (launches internal processes)
-// receives a channel to receive actions and returns a channel to receive State when it changes
-// engine will ignore any action once gameover, and will only continue to execute actions when Reset is invoked
-func (e *engine) Step(a gotetromino.Action) gotetromino.State {
+// State returns the current game state
+func(e *engine) State() gotetromino.State {
+    return e.state
+}
+
+// Step updates the game state based on the given action
+// Step will ignore any action once gameover, and will only continue to execute actions when Reset is invoked
+func (e *engine) Step(a gotetromino.Action) {
 	// do not continue updating state if game is over
 	if e.state.Over {
-		return e.state
+		return
 	}
 	s := duplicate(e.state)
 	switch a {
@@ -32,7 +36,7 @@ func (e *engine) Step(a gotetromino.Action) gotetromino.State {
 		s = moveTetromino(s, 1, 0)
 		if !collision(s) {
 			e.state = s
-			return e.state
+			return
 		}
 		s = moveTetromino(s, -1, 0)
 		// lock tetromino into matrix once collision occurs
@@ -72,8 +76,6 @@ func (e *engine) Step(a gotetromino.Action) gotetromino.State {
 		}
 
 	}
-
-	return e.state
 }
 
 // Reset resets the state of the game back to its initial state

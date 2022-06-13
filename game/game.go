@@ -1,6 +1,8 @@
 package game
 
 import (
+	"time"
+
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 	"github.com/David-The-Programmer/go-tetromino/engine"
 	"github.com/David-The-Programmer/go-tetromino/ui"
@@ -9,59 +11,42 @@ import (
 type game struct {
 	engine gotetromino.Engine
 	ui     gotetromino.UI
+	ticker *time.Ticker
 }
 
 func New() gotetromino.Game {
 	e := engine.New(20, 20)
 	ui := ui.New()
+	t := time.NewTicker(200 * time.Millisecond)
 	g := game{
 		engine: e,
 		ui:     ui,
+		ticker: t,
 	}
 	var tetrisGame gotetromino.Game = &g
 	return tetrisGame
 }
 
 func (g *game) Run() {
-	stateChanges := g.engine.Start(g.ui.Action())
-	userInteractions := g.ui.Interaction()
-	state := gotetromino.State{}
+	actions := g.ui.Action()
+	interactions := g.ui.Interaction()
 	for {
 		select {
-		case i := <-userInteractions:
-			// stop engine and quit UI if user signals to exit
+		case i := <-interactions:
 			if i == gotetromino.Exit {
-				g.engine.Stop()
 				g.ui.Stop()
 				return
 			}
-			if i == gotetromino.Restart && state.Over {
+			if i == gotetromino.Restart && g.engine.State().Over {
 				g.engine.Reset()
 			}
-		case state = <-stateChanges:
-			// render whenever a change in state occurs
-			g.ui.Render(state)
+		case a := <-actions:
+			g.engine.Step(a)
+			g.ui.Render(g.engine.State())
+		case <-g.ticker.C:
+			g.engine.Step(gotetromino.SoftDrop)
+			g.ui.Render(g.engine.State())
 		}
+
 	}
-	/*
-		    select {
-		    case <- userInteractions:
-		        // exit & restart
-		    case <- userActions:
-			    Left
-		        g.engine.Step(a Action) State
-
-			    Right
-		        g.engine.Step(a Action) State
-
-			    Drop
-		        g.engine.Step(a Action) State
-
-			    Rotate
-		        g.engine.Step(a Action) State
-		    case <- ticker.C
-		        NoAction
-		        g.engine.Step(a Action) State
-		    }
-	*/
 }
