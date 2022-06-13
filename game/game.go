@@ -26,6 +26,7 @@ func New() gotetromino.Game {
 func (g *game) Run() {
 	stateChanges := g.engine.Start(g.ui.Action())
 	userInteractions := g.ui.Interaction()
+	state := gotetromino.State{}
 	for {
 		select {
 		case i := <-userInteractions:
@@ -35,7 +36,7 @@ func (g *game) Run() {
 				g.ui.Stop()
 				return
 			}
-		case state := <-stateChanges:
+		case state = <-stateChanges:
 			// render whenever a change in state occurs
 			g.ui.Render(state)
 		}

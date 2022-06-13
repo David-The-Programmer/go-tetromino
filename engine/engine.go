@@ -37,6 +37,7 @@ func New(numRows int, numCols int) gotetromino.Engine {
 		e.state.Matrix[len(e.state.Matrix)-1][i] = int(Boundary)
 	}
 	// set current tetromino & its position
+	// TODO: Refactor this part
 	e.state.CurrentTetromino = randTetromino()
 	e.state.CurrentTetrominoPos = tetrominoStartPos(e.state.CurrentTetromino, e.state.Matrix)
 
@@ -64,12 +65,18 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 		for {
 			select {
 			case <-e.stop:
+				e.ticker.Stop()
 				return
 			case <-e.ticker.C:
-				// make current tetromino fall every 150ms
 				mutex.Lock()
-				s := moveTetromino(e.state, 1, 0)
+				s := duplicate(e.state)
 				mutex.Unlock()
+				// do not continue updating state if game is over
+				if s.Over {
+					continue
+				}
+				// make current tetromino fall every 150ms
+				s = moveTetromino(s, 1, 0)
 				if !collision(s) {
 					mutex.Lock()
 					e.state = s
@@ -77,19 +84,15 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 					e.stateChange <- e.state
 					continue
 				}
-				//             s = spawnTetromino(e.state)
-				// // TODO: Use channel to spawn new tetromino piece
-				// // if unable to spawn new tetromino due to existing pieces already there, game is over
-				// if collision(s) {
-				// 	e.mutex.Lock()
-				// 	e.state.Over = true
-				// 	e.mutex.Unlock()
-				// 	go e.Stop()
-				// 	e.stateChange <- e.state
-				// }
 				// lock tetromino into matrix once collision occurs
-				s = lockTetromino(e.state)
-				s = spawnTetromino(s)
+				s = lockTetromino(s)
+				temp := spawnTetromino(s)
+				// if unable to spawn new tetromino due to existing pieces already there, game is over
+				if collision(temp) {
+					s = over(s)
+				} else {
+					s = temp
+				}
 				mutex.Lock()
 				e.state = s
 				mutex.Unlock()
@@ -98,6 +101,10 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 				mutex.Lock()
 				s := duplicate(e.state)
 				mutex.Unlock()
+				// do not continue updating state if game is over
+				if s.Over {
+					continue
+				}
 				// set the change in position of CurrentTetromino according to action
 				switch action {
 				case gotetromino.Drop:
@@ -107,7 +114,13 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 					s = moveTetromino(s, -1, 0)
 					// lock tetromino into matrix once collision occurs
 					s = lockTetromino(s)
-					s = spawnTetromino(s)
+					temp := spawnTetromino(s)
+					// if unable to spawn new tetromino due to existing pieces already there, game is over
+					if collision(temp) {
+						s = over(s)
+					} else {
+						s = temp
+					}
 					mutex.Lock()
 					e.state = s
 					mutex.Unlock()
@@ -137,21 +150,12 @@ func (e *engine) Start(a <-chan gotetromino.Action) <-chan gotetromino.State {
 			}
 		}
 	}()
-	// TODO: Replace timer based game over for actual game over, when game over, auto stop the engine
-	// go func() {
-	// 	time.Sleep(1 * time.Second)
-	// 	e.mutex.Lock()
-	// 	e.state.Over = true
-	// 	e.mutex.Unlock()
-	// 	e.stop <- e.state.Over
-	// }()
 
 	return e.stateChange
 }
 
 // Stop ends the running of the engine
 func (e *engine) Stop() {
-	e.ticker.Stop()
 	e.stop <- true
 }
 
@@ -256,6 +260,13 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 		0,
 		(len(matrix[0]) - 2 - len(tetromino)) / 2,
 	}
+}
+
+// over returns gameover state
+func over(s gotetromino.State) gotetromino.State {
+	state := duplicate(s)
+	state.Over = true
+	return state
 }
 
 // TODO: Finish clearing of tetromino blocks
