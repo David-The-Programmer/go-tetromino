@@ -36,7 +36,7 @@ func New(s tcell.Screen) gotetromino.User {
 						u.interaction <- gotetromino.Restart
 					}
 				case tcell.KeyDown:
-					u.action <- gotetromino.Drop
+					u.action <- gotetromino.HardDrop
 				case tcell.KeyLeft:
 					u.action <- gotetromino.Left
 				case tcell.KeyRight:

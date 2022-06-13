@@ -22,7 +22,6 @@ func New() gotetromino.Game {
 	return tetrisGame
 }
 
-// TODO: Update run method to allow user to restart game after game over
 func (g *game) Run() {
 	stateChanges := g.engine.Start(g.ui.Action())
 	userInteractions := g.ui.Interaction()
@@ -44,4 +43,25 @@ func (g *game) Run() {
 			g.ui.Render(state)
 		}
 	}
+	/*
+		    select {
+		    case <- userInteractions:
+		        // exit & restart
+		    case <- userActions:
+			    Left
+		        g.engine.Step(a Action) State
+
+			    Right
+		        g.engine.Step(a Action) State
+
+			    Drop
+		        g.engine.Step(a Action) State
+
+			    Rotate
+		        g.engine.Step(a Action) State
+		    case <- ticker.C
+		        NoAction
+		        g.engine.Step(a Action) State
+		    }
+	*/
 }
