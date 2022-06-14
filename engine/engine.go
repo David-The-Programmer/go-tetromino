@@ -41,6 +41,8 @@ func (e *engine) Step(a gotetromino.Action) {
 		s = moveTetromino(s, -1, 0)
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
+		// clear any full rows in the matrix after tetromino is locked
+		s = clearFullRows(s)
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -56,6 +58,8 @@ func (e *engine) Step(a gotetromino.Action) {
 		s = moveTetromino(s, -1, 0)
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
+		// clear any full rows in the matrix after tetromino is locked
+		s = clearFullRows(s)
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -211,6 +215,35 @@ func over(s gotetromino.State) gotetromino.State {
 	return state
 }
 
+// clearFullRows returns a new state, which comprises of the given state in which all full rows are cleared
+func clearFullRows(s gotetromino.State) gotetromino.State {
+	state := duplicate(s)
+	// skip checking bottom boundary
+	for row := 0; row < len(state.Matrix)-1; row++ {
+		rowIsFull := true
+		// skip checking left & right boundaries
+		for col := 1; col < len(state.Matrix[row])-1; col++ {
+			if state.Matrix[row][col] == int(Space) {
+				rowIsFull = false
+			}
+		}
+		if !rowIsFull {
+			continue
+		}
+		for r := row; r >= 0; r-- {
+			for col := 1; col < len(state.Matrix[row])-1; col++ {
+				if r == 0 {
+					state.Matrix[r][col] = int(Space)
+					continue
+				}
+				state.Matrix[r][col] = state.Matrix[r-1][col]
+			}
+		}
+	}
+
+	return state
+}
+
 // tetrominoStartPos returns the starting position of a tetromino
 func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	return []int{
@@ -219,7 +252,6 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Somehow shift logic of Game into U.I? such that U.I really is the U.I that the user would interact with
 // TODO: Finish clearing of tetromino blocks
 // TODO: Finish rotation of tetromino
 // TODO: Finish scoring
