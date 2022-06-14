@@ -1,49 +1,48 @@
 package ui
 
 import (
-	"log"
+	"time"
 
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
-	"github.com/David-The-Programmer/go-tetromino/renderer"
-	"github.com/David-The-Programmer/go-tetromino/user"
-
-	"github.com/gdamore/tcell/v2"
 )
 
 type ui struct {
-	renderer gotetromino.Renderer
+	engine   gotetromino.Engine
 	user     gotetromino.User
+	renderer gotetromino.Renderer
+	ticker   *time.Ticker
 }
 
-func New() gotetromino.UI {
-	s, err := tcell.NewScreen()
-	if err != nil {
-		log.Panic(err)
-	}
-	if err = s.Init(); err != nil {
-		log.Panic(err)
-	}
-	r := renderer.New(s)
-	u := user.New(s)
+func New(e gotetromino.Engine, r gotetromino.Renderer, u gotetromino.User) gotetromino.UI {
+	t := time.NewTicker(200 * time.Millisecond)
 	var ui gotetromino.UI = &ui{
-		renderer: r,
+		engine:   e,
 		user:     u,
+		renderer: r,
+		ticker:   t,
 	}
 	return ui
 }
 
-func (ui *ui) Render(s gotetromino.State) {
-	ui.renderer.Render(s)
-}
+func (ui *ui) Run() {
+	actions := ui.user.Action()
+	interactions := ui.user.Interaction()
+	for {
+		ui.renderer.Render(ui.engine.State())
+		select {
+		case i := <-interactions:
+			if i == gotetromino.Exit {
+				ui.renderer.Stop()
+				return
+			}
+			if i == gotetromino.Restart && ui.engine.State().Over {
+				ui.engine.Reset()
+			}
+		case a := <-actions:
+			ui.engine.Step(a)
+		case <-ui.ticker.C:
+			ui.engine.Step(gotetromino.SoftDrop)
+		}
 
-func (ui *ui) Stop() {
-	ui.renderer.Stop()
-}
-
-func (ui *ui) Action() <-chan gotetromino.Action {
-	return ui.user.Action()
-}
-
-func (ui *ui) Interaction() <-chan gotetromino.Interaction {
-	return ui.user.Interaction()
+	}
 }

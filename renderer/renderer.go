@@ -24,6 +24,7 @@ func (r *renderer) Render(s gotetromino.State) {
 	for row := 0; row < len(s.Matrix); row++ {
 		for col := 0; col < len(s.Matrix[row]); col++ {
 			st := tcell.StyleDefault
+			// TODO: Put Block type all in gotetromino.go instead
 			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
 			r.screen.SetContent(col, row, charForBlock(engine.Block(s.Matrix[row][col])), nil, st)
 		}

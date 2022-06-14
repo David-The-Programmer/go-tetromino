@@ -1,6 +1,6 @@
 package gotetromino
 
-type Game interface {
+type UI interface {
 	Run()
 }
 
@@ -47,9 +47,4 @@ type Player interface {
 type User interface {
 	Player
 	Interaction() <-chan Interaction
-}
-
-type UI interface {
-	Renderer
-	User
 }
