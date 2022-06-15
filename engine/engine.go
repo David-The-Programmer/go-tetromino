@@ -42,7 +42,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
 		// clear any full rows in the matrix after tetromino is locked
-		s = clearFullRows(s)
+		s = clearLines(s)
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -59,7 +59,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
 		// clear any full rows in the matrix after tetromino is locked
-		s = clearFullRows(s)
+		s = clearLines(s)
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -78,7 +78,16 @@ func (e *engine) Step(a gotetromino.Action) {
 		if !collision(s) {
 			e.state = s
 		}
-
+	case gotetromino.RotateCW:
+		s = rotateTetrimino(s, clockwise)
+		if !collision(s) {
+			e.state = s
+		}
+	case gotetromino.RotateACW:
+		s = rotateTetrimino(s, antiClockwise)
+		if !collision(s) {
+			e.state = s
+		}
 	}
 }
 
@@ -215,8 +224,8 @@ func over(s gotetromino.State) gotetromino.State {
 	return state
 }
 
-// clearFullRows returns a new state, which comprises of the given state in which all full rows are cleared
-func clearFullRows(s gotetromino.State) gotetromino.State {
+// clearLines returns a new state, which comprises of the given state in which all full rows are cleared
+func clearLines(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
 	// skip checking bottom boundary
 	for row := 0; row < len(state.Matrix)-1; row++ {
@@ -244,6 +253,13 @@ func clearFullRows(s gotetromino.State) gotetromino.State {
 	return state
 }
 
+// rotateTetrimino returns a new state, which comprises of the given state which current tetromino is rotated in specified direction
+func rotateTetrimino(s gotetromino.State, d direction) gotetromino.State {
+	state := duplicate(s)
+	rotate(state.CurrentTetromino, d)
+	return state
+}
+
 // tetrominoStartPos returns the starting position of a tetromino
 func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	return []int{
@@ -252,13 +268,11 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Finish clearing of tetromino blocks
-// TODO: Finish rotation of tetromino
 // TODO: Finish scoring
-// TODO: Need to have different delays between falling and movement of pieces
-// TODO: Finish U.I (show scoring, next tetromino, hold tetromino, instructions to restart game, game controls, etc)
 // TODO: Finish having next tetromino
+// TODO: Finish U.I (show scoring, next tetromino, hold tetromino, instructions to restart game, game controls, etc)
 // TODO: Finish ghost piece
+// TODO: Need to have different delays between falling and movement of pieces
 // TODO: Finish having hold tetromino
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field

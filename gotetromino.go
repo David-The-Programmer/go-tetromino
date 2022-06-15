@@ -21,11 +21,13 @@ type State struct {
 type Action int
 
 const (
-	SoftDrop Action = iota
+	None Action = iota
+	SoftDrop
 	HardDrop
 	Left
 	Right
-	Rotate
+	RotateCW
+	RotateACW
 )
 
 type Interaction int

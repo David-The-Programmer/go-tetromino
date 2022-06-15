@@ -8,7 +8,7 @@ import (
 
 var blockCodeToColour = map[engine.Block]tcell.Color{
 	engine.Space:      tcell.ColorDefault,
-	engine.Boundary:   tcell.ColorWhite,
+	engine.Boundary:   tcell.ColorDimGrey,
 	engine.ITetromino: tcell.ColorDarkCyan,
 	engine.JTetromino: tcell.ColorBlue,
 	engine.LTetromino: tcell.ColorOrange,
@@ -27,14 +27,14 @@ func colourForBlock(b engine.Block) tcell.Color {
 
 var blockCodeToChar = map[engine.Block]rune{
 	engine.Space:      ' ',
-	engine.Boundary:   'O',
-	engine.ITetromino: 'O',
-	engine.JTetromino: 'O',
-	engine.LTetromino: 'O',
-	engine.OTetromino: 'O',
-	engine.STetromino: 'O',
-	engine.TTetromino: 'O',
-	engine.ZTetromino: 'O',
+	engine.Boundary:   '#',
+	engine.ITetromino: '#',
+	engine.JTetromino: '#',
+	engine.LTetromino: '#',
+	engine.OTetromino: '#',
+	engine.STetromino: '#',
+	engine.TTetromino: '#',
+	engine.ZTetromino: '#',
 }
 
 func charForBlock(b engine.Block) rune {

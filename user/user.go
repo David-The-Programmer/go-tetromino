@@ -31,9 +31,13 @@ func New(s tcell.Screen) gotetromino.User {
 					u.interaction <- gotetromino.Exit
 					return
 				case tcell.KeyRune:
-					r := ev.Rune()
-					if r == 'r' {
+					switch ev.Rune() {
+					case 'r':
 						u.interaction <- gotetromino.Restart
+					case 'x':
+						u.action <- gotetromino.RotateCW
+					case 'z':
+						u.action <- gotetromino.RotateACW
 					}
 				case tcell.KeyDown:
 					u.action <- gotetromino.HardDrop
