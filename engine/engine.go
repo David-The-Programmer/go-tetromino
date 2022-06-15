@@ -52,22 +52,24 @@ func (e *engine) Step(a gotetromino.Action) {
 		}
 		e.state = s
 	case gotetromino.SoftDrop:
-		s = moveTetromino(s, 2, 0)
-		if !collision(s) {
-			e.state = s
-			return
-		}
-		s = moveTetromino(s, -1, 0)
-		// lock tetromino into matrix once collision occurs
-		s = lockTetromino(s)
-		// clear any full rows in the matrix after tetromino is locked
-		s = clearLines(s)
-		temp := spawnTetromino(s)
-		// if unable to spawn new tetromino due to existing pieces already there, game is over
-		if collision(temp) {
-			s = over(s)
-		} else {
-			s = temp
+		const maxSteps = 2
+		s = moveTetromino(s, maxSteps, 0)
+		if collision(s) {
+			// rollback on movement if step exceeds the bottom boundary
+			for collision(s) {
+				s = moveTetromino(s, -1, 0)
+			}
+			// lock tetromino into matrix if collision occurs
+			s = lockTetromino(s)
+			// clear any full rows in the matrix after tetromino is locked
+			s = clearLines(s)
+			temp := spawnTetromino(s)
+			// if unable to spawn new tetromino due to existing pieces already there, game is over
+			if collision(temp) {
+				s = over(s)
+			} else {
+				s = temp
+			}
 		}
 		e.state = s
 	case gotetromino.HardDrop:
