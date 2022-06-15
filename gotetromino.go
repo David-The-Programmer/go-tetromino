@@ -16,6 +16,8 @@ type State struct {
 	Matrix              [][]int
 	Score               int
 	Over                bool
+	Level               int
+	LineCount           int
 }
 
 type Action int

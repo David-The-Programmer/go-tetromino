@@ -41,8 +41,19 @@ func (e *engine) Step(a gotetromino.Action) {
 		s = moveTetromino(s, -1, 0)
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
-		// clear any full rows in the matrix after tetromino is locked
-		s = clearLines(s)
+		// check for any lines (full rows)
+		first, last, ok := findLines(s)
+		if ok {
+			// clear any full rows in the matrix after tetromino is locked
+			s = clearLines(s, first, last)
+		}
+
+		/*
+		   s, numLines := clearLines(s)
+		   if numLines % 10 {
+		       s = levelUp(s)
+		   }
+		*/
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -61,8 +72,12 @@ func (e *engine) Step(a gotetromino.Action) {
 			}
 			// lock tetromino into matrix if collision occurs
 			s = lockTetromino(s)
-			// clear any full rows in the matrix after tetromino is locked
-			s = clearLines(s)
+			// check for any lines (full rows)
+			first, last, ok := findLines(s)
+			if ok {
+				// clear any full rows in the matrix after tetromino is locked
+				s = clearLines(s, first, last)
+			}
 			temp := spawnTetromino(s)
 			// if unable to spawn new tetromino due to existing pieces already there, game is over
 			if collision(temp) {
@@ -79,8 +94,12 @@ func (e *engine) Step(a gotetromino.Action) {
 		s = moveTetromino(s, -1, 0)
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
-		// clear any full rows in the matrix after tetromino is locked
-		s = clearLines(s)
+		// check for any lines (full rows)
+		first, last, ok := findLines(s)
+		if ok {
+			// clear any full rows in the matrix after tetromino is locked
+			s = clearLines(s, first, last)
+		}
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -245,21 +264,32 @@ func over(s gotetromino.State) gotetromino.State {
 	return state
 }
 
-// clearLines returns a new state, which comprises of the given state in which all full rows are cleared
-func clearLines(s gotetromino.State) gotetromino.State {
-	state := duplicate(s)
+// findLines check the given state for lines and returns the first & last rowIndexes which have lines in the matrix
+func findLines(s gotetromino.State) (int, int, bool) {
+	rowIndexes := []int{}
 	// skip checking bottom boundary
-	for row := 0; row < len(state.Matrix)-1; row++ {
-		rowIsFull := true
+	for row := 0; row < len(s.Matrix)-1; row++ {
+		rowHasLine := true
 		// skip checking left & right boundaries
-		for col := 1; col < len(state.Matrix[row])-1; col++ {
-			if state.Matrix[row][col] == int(Space) {
-				rowIsFull = false
+		for col := 1; col < len(s.Matrix[row])-1; col++ {
+			if s.Matrix[row][col] == int(Space) {
+				rowHasLine = false
 			}
 		}
-		if !rowIsFull {
-			continue
+		if rowHasLine {
+			rowIndexes = append(rowIndexes, row)
 		}
+	}
+	if len(rowIndexes) == 0 {
+		return 0, 0, false
+	}
+	return rowIndexes[0], rowIndexes[len(rowIndexes)-1], true
+}
+
+// clearLines returns a new state, which comprises of the given state where the rows of specified range of indexes are cleared
+func clearLines(s gotetromino.State, firstRowIdx int, lastRowIdx int) gotetromino.State {
+	state := duplicate(s)
+	for row := firstRowIdx; row <= lastRowIdx; row++ {
 		for r := row; r >= 0; r-- {
 			for col := 1; col < len(state.Matrix[row])-1; col++ {
 				if r == 0 {
@@ -269,6 +299,7 @@ func clearLines(s gotetromino.State) gotetromino.State {
 				state.Matrix[r][col] = state.Matrix[r-1][col]
 			}
 		}
+
 	}
 
 	return state
@@ -281,6 +312,8 @@ func rotateTetrimino(s gotetromino.State, d direction) gotetromino.State {
 	return state
 }
 
+// levelUp calculates the returns a new state
+
 // tetrominoStartPos returns the starting position of a tetromino
 func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	return []int{
@@ -289,8 +322,9 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Finish levels (leveling up)
+// TODO: Finish levels, put in state (leveling up, speed up game (delay) according to level)
 // TODO: Finish scoring
+// TODO: Finish returning lines cleared after actions in state, for renderer to render animation or something
 // TODO: Finish having next tetromino
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
 // TODO: Finish ghost piece
