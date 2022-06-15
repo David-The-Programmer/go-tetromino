@@ -14,7 +14,7 @@ type ui struct {
 }
 
 func New(e gotetromino.Engine, r gotetromino.Renderer, u gotetromino.User) gotetromino.UI {
-	t := time.NewTicker(200 * time.Millisecond)
+	t := time.NewTicker(800 * time.Millisecond)
 	var ui gotetromino.UI = &ui{
 		engine:   e,
 		user:     u,
@@ -41,7 +41,7 @@ func (ui *ui) Run() {
 		case a := <-actions:
 			ui.engine.Step(a)
 		case <-ui.ticker.C:
-			ui.engine.Step(gotetromino.SoftDrop)
+			ui.engine.Step(gotetromino.None)
 		}
 
 	}

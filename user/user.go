@@ -38,9 +38,11 @@ func New(s tcell.Screen) gotetromino.User {
 						u.action <- gotetromino.RotateCW
 					case 'z':
 						u.action <- gotetromino.RotateACW
+					case ' ':
+						u.action <- gotetromino.HardDrop
 					}
 				case tcell.KeyDown:
-					u.action <- gotetromino.HardDrop
+					u.action <- gotetromino.SoftDrop
 				case tcell.KeyLeft:
 					u.action <- gotetromino.Left
 				case tcell.KeyRight:

@@ -32,8 +32,27 @@ func (e *engine) Step(a gotetromino.Action) {
 	}
 	s := duplicate(e.state)
 	switch a {
-	case gotetromino.SoftDrop:
+	case gotetromino.None:
 		s = moveTetromino(s, 1, 0)
+		if !collision(s) {
+			e.state = s
+			return
+		}
+		s = moveTetromino(s, -1, 0)
+		// lock tetromino into matrix once collision occurs
+		s = lockTetromino(s)
+		// clear any full rows in the matrix after tetromino is locked
+		s = clearLines(s)
+		temp := spawnTetromino(s)
+		// if unable to spawn new tetromino due to existing pieces already there, game is over
+		if collision(temp) {
+			s = over(s)
+		} else {
+			s = temp
+		}
+		e.state = s
+	case gotetromino.SoftDrop:
+		s = moveTetromino(s, 2, 0)
 		if !collision(s) {
 			e.state = s
 			return
@@ -268,11 +287,11 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
+// TODO: Finish levels (leveling up)
 // TODO: Finish scoring
 // TODO: Finish having next tetromino
-// TODO: Finish U.I (show scoring, next tetromino, hold tetromino, instructions to restart game, game controls, etc)
+// TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
 // TODO: Finish ghost piece
 // TODO: Need to have different delays between falling and movement of pieces
-// TODO: Finish having hold tetromino
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field
