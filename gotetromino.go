@@ -18,6 +18,7 @@ type State struct {
 	Over                bool
 	Level               int
 	LineCount           int
+	ClearedLinesRows    []int
 }
 
 type Action int

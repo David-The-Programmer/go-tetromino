@@ -31,6 +31,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		return
 	}
 	s := duplicate(e.state)
+	s = setClearedLinesRows(s, nil)
 	switch a {
 	case gotetromino.None:
 		s = moveTetromino(s, 1, 0)
@@ -42,18 +43,16 @@ func (e *engine) Step(a gotetromino.Action) {
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
 		// check for any lines (full rows)
-		first, last, ok := findLines(s)
-		if ok {
-			// clear any full rows in the matrix after tetromino is locked
-			s = clearLines(s, first, last)
+		rows := findLines(s)
+		if len(rows) > 0 {
+			// clear any lines if found
+			s = clearLines(s, rows)
+			s = setClearedLinesRows(s, rows)
+			s = incrementLineCount(s, len(rows))
 		}
-
-		/*
-		   s, numLines := clearLines(s)
-		   if numLines % 10 {
-		       s = levelUp(s)
-		   }
-		*/
+		if clearedLevel(s) {
+			s = levelUp(s)
+		}
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
 		if collision(temp) {
@@ -73,10 +72,15 @@ func (e *engine) Step(a gotetromino.Action) {
 			// lock tetromino into matrix if collision occurs
 			s = lockTetromino(s)
 			// check for any lines (full rows)
-			first, last, ok := findLines(s)
-			if ok {
-				// clear any full rows in the matrix after tetromino is locked
-				s = clearLines(s, first, last)
+			rows := findLines(s)
+			if len(rows) > 0 {
+				// clear any lines if found
+				s = clearLines(s, rows)
+				s = setClearedLinesRows(s, rows)
+				s = incrementLineCount(s, len(rows))
+			}
+			if clearedLevel(s) {
+				s = levelUp(s)
 			}
 			temp := spawnTetromino(s)
 			// if unable to spawn new tetromino due to existing pieces already there, game is over
@@ -95,10 +99,15 @@ func (e *engine) Step(a gotetromino.Action) {
 		// lock tetromino into matrix once collision occurs
 		s = lockTetromino(s)
 		// check for any lines (full rows)
-		first, last, ok := findLines(s)
-		if ok {
-			// clear any full rows in the matrix after tetromino is locked
-			s = clearLines(s, first, last)
+		rows := findLines(s)
+		if len(rows) > 0 {
+			// clear any lines if found
+			s = clearLines(s, rows)
+			s = setClearedLinesRows(s, rows)
+			s = incrementLineCount(s, len(rows))
+		}
+		if clearedLevel(s) {
+			s = levelUp(s)
 		}
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
@@ -157,8 +166,6 @@ func collision(s gotetromino.State) bool {
 // duplicate returns a deep copy of the given state
 func duplicate(s gotetromino.State) gotetromino.State {
 	state := gotetromino.State{}
-
-	// copy CurrentTetromino
 	for row := 0; row < len(s.CurrentTetromino); row++ {
 		newRow := []int{}
 		for col := 0; col < len(s.CurrentTetromino[row]); col++ {
@@ -166,13 +173,9 @@ func duplicate(s gotetromino.State) gotetromino.State {
 		}
 		state.CurrentTetromino = append(state.CurrentTetromino, newRow)
 	}
-
-	// copy CurrentTetrominoPos
 	for i := 0; i < len(s.CurrentTetrominoPos); i++ {
 		state.CurrentTetrominoPos = append(state.CurrentTetrominoPos, s.CurrentTetrominoPos[i])
 	}
-
-	// copy Matrix
 	for row := 0; row < len(s.Matrix); row++ {
 		newRow := []int{}
 		for col := 0; col < len(s.Matrix[row]); col++ {
@@ -180,12 +183,11 @@ func duplicate(s gotetromino.State) gotetromino.State {
 		}
 		state.Matrix = append(state.Matrix, newRow)
 	}
-
-	// copy Score
 	state.Score = s.Score
-
-	// copy Over
 	state.Over = s.Over
+	state.Level = s.Level
+	state.LineCount = s.LineCount
+	state.ClearedLinesRows = append([]int{}, s.ClearedLinesRows...)
 
 	return state
 }
@@ -264,9 +266,10 @@ func over(s gotetromino.State) gotetromino.State {
 	return state
 }
 
-// findLines check the given state for lines and returns the first & last rowIndexes which have lines in the matrix
-func findLines(s gotetromino.State) (int, int, bool) {
-	rowIndexes := []int{}
+// findLines check the given state for lines and returns slice of rows which have lines in the matrix
+// empty slice is returned if no lines found
+func findLines(s gotetromino.State) []int {
+	rows := []int{}
 	// skip checking bottom boundary
 	for row := 0; row < len(s.Matrix)-1; row++ {
 		rowHasLine := true
@@ -277,19 +280,24 @@ func findLines(s gotetromino.State) (int, int, bool) {
 			}
 		}
 		if rowHasLine {
-			rowIndexes = append(rowIndexes, row)
+			rows = append(rows, row)
 		}
 	}
-	if len(rowIndexes) == 0 {
-		return 0, 0, false
-	}
-	return rowIndexes[0], rowIndexes[len(rowIndexes)-1], true
+	return rows
 }
 
-// clearLines returns a new state, which comprises of the given state where the rows of specified range of indexes are cleared
-func clearLines(s gotetromino.State, firstRowIdx int, lastRowIdx int) gotetromino.State {
+// setClearedLinesRows returns a new state, comprises of the given state with ClearedLinesRows being set to given rows of cleared lines
+func setClearedLinesRows(s gotetromino.State, rows []int) gotetromino.State {
 	state := duplicate(s)
-	for row := firstRowIdx; row <= lastRowIdx; row++ {
+	state.ClearedLinesRows = append([]int{}, rows...)
+	return state
+}
+
+// clearLines returns a new state, which comprises of the given state where the specified rows containing lines are cleared
+// rows is expected to have at least length of 1, or it will panic
+func clearLines(s gotetromino.State, rows []int) gotetromino.State {
+	state := duplicate(s)
+	for row := rows[0]; row <= rows[len(rows)-1]; row++ {
 		for r := row; r >= 0; r-- {
 			for col := 1; col < len(state.Matrix[row])-1; col++ {
 				if r == 0 {
@@ -299,7 +307,6 @@ func clearLines(s gotetromino.State, firstRowIdx int, lastRowIdx int) gotetromin
 				state.Matrix[r][col] = state.Matrix[r-1][col]
 			}
 		}
-
 	}
 
 	return state
@@ -312,7 +319,25 @@ func rotateTetrimino(s gotetromino.State, d direction) gotetromino.State {
 	return state
 }
 
-// levelUp calculates the returns a new state
+// incrementLineCount returns a new state comprising of the given state with LineCount incremented with the given no. lines cleared
+func incrementLineCount(s gotetromino.State, numLinesCleared int) gotetromino.State {
+	state := duplicate(s)
+	state.LineCount += numLinesCleared
+	return state
+}
+
+// clearedLevel return true if the current level of the given state has been cleared
+func clearedLevel(s gotetromino.State) bool {
+	const linesToClear = 10
+	return len(s.ClearedLinesRows) != 0 && s.LineCount%linesToClear == 0 && s.LineCount != 0
+}
+
+// levelUp calculates the returns a new state comprising of the given state with Level incremented by 1
+func levelUp(s gotetromino.State) gotetromino.State {
+	state := duplicate(s)
+	state.Level += 1
+	return state
+}
 
 // tetrominoStartPos returns the starting position of a tetromino
 func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
@@ -322,12 +347,12 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Finish levels, put in state (leveling up, speed up game (delay) according to level)
 // TODO: Finish scoring
-// TODO: Finish returning lines cleared after actions in state, for renderer to render animation or something
-// TODO: Finish having next tetromino
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
+// TODO: Finish having next tetromino
+// TODO: Finish making the randTetromino func generate loopable patterns of tetrominos for easier gameplay
 // TODO: Finish ghost piece
+// TODO: Need to fix bug where person can hold tetrominoes indefinitely using arrow keys
 // TODO: Need to have different delays between falling and movement of pieces
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field
