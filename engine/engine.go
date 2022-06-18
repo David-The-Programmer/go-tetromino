@@ -49,6 +49,7 @@ func (e *engine) Step(a gotetromino.Action) {
 			s = clearLines(s, rows)
 			s = setClearedLinesRows(s, rows)
 			s = incrementLineCount(s, len(rows))
+			s = incrementScore(s, calcPts(s.Level, len(rows)))
 		}
 		if clearedLevel(s) {
 			s = levelUp(s)
@@ -78,6 +79,7 @@ func (e *engine) Step(a gotetromino.Action) {
 				s = clearLines(s, rows)
 				s = setClearedLinesRows(s, rows)
 				s = incrementLineCount(s, len(rows))
+				s = incrementScore(s, calcPts(s.Level, len(rows)))
 			}
 			if clearedLevel(s) {
 				s = levelUp(s)
@@ -105,6 +107,7 @@ func (e *engine) Step(a gotetromino.Action) {
 			s = clearLines(s, rows)
 			s = setClearedLinesRows(s, rows)
 			s = incrementLineCount(s, len(rows))
+			s = incrementScore(s, calcPts(s.Level, len(rows)))
 		}
 		if clearedLevel(s) {
 			s = levelUp(s)
@@ -332,10 +335,23 @@ func clearedLevel(s gotetromino.State) bool {
 	return len(s.ClearedLinesRows) != 0 && s.LineCount%linesToClear == 0 && s.LineCount != 0
 }
 
-// levelUp calculates the returns a new state comprising of the given state with Level incremented by 1
+// levelUp returns a new state comprising of the given state with Level incremented by 1
 func levelUp(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
 	state.Level += 1
+	return state
+}
+
+// calcPts returns the points to be added given the current level and no. lines cleared
+func calcPts(level int, linesCleared int) int {
+	ptsToLinesCleared := []int{40, 100, 300, 1200}
+	return (level + 1) * ptsToLinesCleared[linesCleared-1]
+}
+
+// incrementScore returns a new state comprising of the given state with Score incremented by the given points
+func incrementScore(s gotetromino.State, pts int) gotetromino.State {
+	state := duplicate(s)
+	state.Score += pts
 	return state
 }
 
@@ -349,6 +365,7 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 
 // TODO: Finish scoring
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
+// TODO: Finish reset of state
 // TODO: Finish having next tetromino
 // TODO: Finish making the randTetromino func generate loopable patterns of tetrominos for easier gameplay
 // TODO: Finish ghost piece
