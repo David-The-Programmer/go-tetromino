@@ -1,4 +1,4 @@
-package renderer
+package matrix
 
 import (
 	"github.com/David-The-Programmer/go-tetromino/engine"

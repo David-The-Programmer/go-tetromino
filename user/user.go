@@ -8,16 +8,15 @@ import (
 
 type user struct {
 	screen      tcell.Screen
-	action      chan gotetromino.Action
 	interaction chan gotetromino.Interaction
+	observers   []gotetromino.Observer
 }
 
 func New(s tcell.Screen) gotetromino.User {
-	a := make(chan gotetromino.Action)
-	i := make(chan gotetromino.Interaction)
+	// Give channel capacity of 1 to prevent blocking when sending to channel
+	i := make(chan gotetromino.Interaction, 1)
 	u := user{
 		screen:      s,
-		action:      a,
 		interaction: i,
 	}
 	// launch goroutine to listen to key events and send corresponding actions/interactions
@@ -29,24 +28,14 @@ func New(s tcell.Screen) gotetromino.User {
 				switch ev.Key() {
 				case tcell.KeyEsc:
 					u.interaction <- gotetromino.Exit
+					u.NotifyObservers()
 					return
 				case tcell.KeyRune:
 					switch ev.Rune() {
 					case 'r':
 						u.interaction <- gotetromino.Restart
-					case 'x':
-						u.action <- gotetromino.RotateCW
-					case 'z':
-						u.action <- gotetromino.RotateACW
-					case ' ':
-						u.action <- gotetromino.HardDrop
+						u.NotifyObservers()
 					}
-				case tcell.KeyDown:
-					u.action <- gotetromino.SoftDrop
-				case tcell.KeyLeft:
-					u.action <- gotetromino.Left
-				case tcell.KeyRight:
-					u.action <- gotetromino.Right
 				}
 			}
 		}
@@ -55,10 +44,29 @@ func New(s tcell.Screen) gotetromino.User {
 	return user
 }
 
-func (u *user) Action() <-chan gotetromino.Action {
-	return u.action
+func (u *user) Register(o gotetromino.Observer) {
+	u.observers = append(u.observers, o)
 }
 
-func (u *user) Interaction() <-chan gotetromino.Interaction {
-	return u.interaction
+func (u *user) Unregister(o gotetromino.Observer) {
+	observerIdx := 0
+	for i := range u.observers {
+		if u.observers[i] == o {
+			observerIdx = i
+		}
+	}
+	retained := []gotetromino.Observer{}
+	retained = append(retained, u.observers[:observerIdx]...)
+	retained = append(retained, u.observers[observerIdx+1:]...)
+	u.observers = retained
+}
+
+func (u *user) NotifyObservers() {
+	for i := range u.observers {
+		u.observers[i].Notify()
+	}
+}
+
+func (u *user) Interaction() gotetromino.Interaction {
+	return <-u.interaction
 }

@@ -4,8 +4,7 @@ import (
 	"log"
 
 	"github.com/David-The-Programmer/go-tetromino/engine"
-	"github.com/David-The-Programmer/go-tetromino/renderer"
-	"github.com/David-The-Programmer/go-tetromino/ui"
+	"github.com/David-The-Programmer/go-tetromino/ui/matrix"
 	"github.com/David-The-Programmer/go-tetromino/user"
 
 	"github.com/gdamore/tcell/v2"
@@ -20,8 +19,8 @@ func main() {
 		log.Panic(err)
 	}
 	e := engine.New(20, 20)
-	r := renderer.New(s)
+	es := engine.NewService(e)
 	u := user.New(s)
-	gameInterface := ui.New(e, r, u)
-	gameInterface.Run()
+	m := matrix.New(s, es, u)
+	m.Run()
 }

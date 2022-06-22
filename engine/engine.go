@@ -363,7 +363,6 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Finish scoring
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
 // TODO: Finish reset of state
 // TODO: Finish having next tetromino
