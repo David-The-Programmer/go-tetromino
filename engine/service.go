@@ -17,16 +17,18 @@ func NewService(e gotetromino.Engine) gotetromino.EngineService {
 		stop:   stop,
 	}
 	go func() {
+        // notify the initial state to all observers
+		es.NotifyAll()
 		for {
 			select {
 			case <-es.stop:
 				return
 			case <-es.reset:
 				es.engine.Reset()
-				es.NotifyObservers()
+				es.NotifyAll()
 			case a := <-es.action:
 				es.engine.Step(a)
-				es.NotifyObservers()
+				es.NotifyAll()
 			}
 		}
 	}()
@@ -53,9 +55,8 @@ func (es *engineService) Reset() {
 
 func (es *engineService) State() gotetromino.State {
 	es.mutex.Lock()
-	state := es.engine.State()
-	es.mutex.Unlock()
-	return state
+	defer es.mutex.Unlock()
+	return es.engine.State()
 }
 
 func (es *engineService) Stop() {
@@ -79,8 +80,8 @@ func (es *engineService) Unregister(o gotetromino.Observer) {
 	es.observers = retained
 }
 
-func (es *engineService) NotifyObservers() {
+func (es *engineService) NotifyAll() {
 	for i := range es.observers {
-		es.observers[i].Notify()
+		es.observers[i].Notify(es.State())
 	}
 }

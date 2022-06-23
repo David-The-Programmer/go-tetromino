@@ -30,12 +30,32 @@ type State struct {
 type Subject interface {
 	Register(Observer)
 	Unregister(Observer)
-	NotifyObservers()
+	NotifyAll()
 }
 
 type Observer interface {
-	Notify()
+    Subscribe(s Subject)
+	Notify(v any)
 }
+
+type KeyEventListener interface {
+	Subject
+	Listen()
+	Stop()
+}
+
+type Key int
+
+const (
+	Esc Key = iota
+	DownArrow
+	LeftArrow
+	RightArrow
+	SpaceBar
+	R
+	X
+	Z
+)
 
 // Action is the in-game action a player makes to play the tetris
 type Action int
@@ -50,11 +70,6 @@ const (
 	RotateACW
 )
 
-type Player interface {
-	Subject
-	Action() Action
-}
-
 // Interaction is the action a user does to use the game app
 type Interaction int
 
@@ -63,24 +78,12 @@ const (
 	Restart
 )
 
-type User interface {
-	Subject
-	Interaction() Interaction
-}
-
 type EngineService interface {
+	Engine
 	Subject
-	Step(a Action)
-	Reset()
-	State() State
 	Stop()
 }
 
 type UI interface {
-	Render()
+	Run()
 }
-
-// Matrix U.I component, Render, Listen, Re-render, Listen, ...
-// Not every U.I component would need to listen, but all need to render
-// U.I component listen to different things, like state, user actions/interaction
-// Need game component, child components (matrix component, stats component, next component), instructions
