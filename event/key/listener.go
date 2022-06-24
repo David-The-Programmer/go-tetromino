@@ -7,21 +7,19 @@ import (
 )
 
 type keyEventListener struct {
-	screen    tcell.Screen
-	event     chan tcell.Event
-	key       chan gotetromino.Key
-	observers []gotetromino.Observer
+	screen   tcell.Screen
+	key      chan gotetromino.Key
+	handlers []gotetromino.KeyEventHandler
 }
 
-func New(s tcell.Screen) gotetromino.KeyEventListener {
-	var k gotetromino.KeyEventListener = &keyEventListener{
+func NewListener(s tcell.Screen) gotetromino.KeyEventListener {
+	return &keyEventListener{
 		screen: s,
 		key:    make(chan gotetromino.Key, 1),
 	}
-	return k
 }
 
-func (k *keyEventListener) Listen() {
+func (k *keyEventListener) Start() {
 	go func() {
 		for {
 			ev := k.screen.PollEvent()
@@ -32,31 +30,31 @@ func (k *keyEventListener) Listen() {
 				switch ev.Key() {
 				case tcell.KeyEsc:
 					k.key <- gotetromino.Esc
-					k.NotifyAll()
+					k.Publish()
 				case tcell.KeyRune:
 					switch ev.Rune() {
 					case 'r':
 						k.key <- gotetromino.R
-						k.NotifyAll()
+						k.Publish()
 					case 'x':
 						k.key <- gotetromino.X
-						k.NotifyAll()
+						k.Publish()
 					case 'z':
 						k.key <- gotetromino.Z
-						k.NotifyAll()
+						k.Publish()
 					case ' ':
 						k.key <- gotetromino.SpaceBar
-						k.NotifyAll()
+						k.Publish()
 					}
 				case tcell.KeyDown:
 					k.key <- gotetromino.DownArrow
-					k.NotifyAll()
+					k.Publish()
 				case tcell.KeyLeft:
 					k.key <- gotetromino.LeftArrow
-					k.NotifyAll()
+					k.Publish()
 				case tcell.KeyRight:
 					k.key <- gotetromino.RightArrow
-					k.NotifyAll()
+					k.Publish()
 				}
 			}
 		}
@@ -73,26 +71,26 @@ func (k *keyEventListener) Stop() {
 
 }
 
-func (k *keyEventListener) Register(o gotetromino.Observer) {
-	k.observers = append(k.observers, o)
+func (k *keyEventListener) Attach(h gotetromino.KeyEventHandler) {
+	k.handlers = append(k.handlers, h)
 }
 
-func (k *keyEventListener) Unregister(o gotetromino.Observer) {
-	observerIdx := 0
-	for i := range k.observers {
-		if k.observers[i] == o {
-			observerIdx = i
+func (k *keyEventListener) Detach(h gotetromino.KeyEventHandler) {
+	handlerIdx := 0
+	for i := range k.handlers {
+		if k.handlers[i] == h {
+			handlerIdx = i
 		}
 	}
-	retained := []gotetromino.Observer{}
-	retained = append(retained, k.observers[:observerIdx]...)
-	retained = append(retained, k.observers[observerIdx+1:]...)
-	k.observers = retained
+	retained := []gotetromino.KeyEventHandler{}
+	retained = append(retained, k.handlers[:handlerIdx]...)
+	retained = append(retained, k.handlers[handlerIdx+1:]...)
+	k.handlers = retained
 }
 
-func (k *keyEventListener) NotifyAll() {
+func (k *keyEventListener) Publish() {
 	key := <-k.key
-	for i := range k.observers {
-		k.observers[i].Notify(key)
+	for i := range k.handlers {
+		k.handlers[i].HandleNewKey(key)
 	}
 }

@@ -27,21 +27,37 @@ type State struct {
 	ClearedLinesRows []int
 }
 
-type Subject interface {
-	Register(Observer)
-	Unregister(Observer)
-	NotifyAll()
+type Service interface {
+	Start()
+	Stop()
 }
 
-type Observer interface {
-    Subscribe(s Subject)
-	Notify(v any)
+type StateEventListener interface {
+	Service
+	Attach(h StateEventHandler)
+	Detach(h StateEventHandler)
+	Publish()
+}
+
+type StateEventHandler interface {
+	HandleNewState(s State)
+}
+
+// Store manages changes to the state
+type Store interface {
+	Engine
+	StateEventListener
 }
 
 type KeyEventListener interface {
-	Subject
-	Listen()
-	Stop()
+	Service
+	Attach(h KeyEventHandler)
+	Detach(h KeyEventHandler)
+	Publish()
+}
+
+type KeyEventHandler interface {
+	HandleNewKey(k Key)
 }
 
 type Key int
@@ -78,12 +94,22 @@ const (
 	Restart
 )
 
-type EngineService interface {
-	Engine
-	Subject
-	Stop()
+type UIComponent interface {
+	Run()
+	Pos() []int
+	SetPos(pos []int)
+	Dimensions() []int
+	SetDimensions(dimensions []int)
 }
 
-type UI interface {
-	Run()
+type ParentUIComponent interface {
+	UIComponent
+	Attach(c ChildUIComponent)
+	Detach(c ChildUIComponent)
+	Publish()
+}
+
+type ChildUIComponent interface {
+	UIComponent
+	HandleNewInteraction(i Interaction)
 }

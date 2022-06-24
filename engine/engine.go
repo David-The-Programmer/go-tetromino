@@ -9,13 +9,11 @@ type engine struct {
 }
 
 // New returns a new instance of gotetromino.Engine
-func New(numRows int, numCols int) gotetromino.Engine {
+func New(numMatrixRows int, numMatrixCols int) gotetromino.Engine {
 	e := engine{}
-	e.state = emptyMatrix(e.state, numRows, numCols)
+	e.state = emptyMatrix(e.state, numMatrixRows, numMatrixCols)
 	e.state = spawnTetromino(e.state)
-
-	var coreEngine gotetromino.Engine = &e
-	return coreEngine
+	return &e
 }
 
 // State returns the current game state
