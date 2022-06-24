@@ -3,27 +3,26 @@ package main
 import (
 	"log"
 
-	"github.com/David-The-Programmer/go-tetromino/engine"
 	"github.com/David-The-Programmer/go-tetromino/event/key"
+	"github.com/David-The-Programmer/go-tetromino/store"
 	"github.com/David-The-Programmer/go-tetromino/ui/matrix"
+	"github.com/David-The-Programmer/go-tetromino/ui/root"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 func main() {
-	s, err := tcell.NewScreen()
+	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Panic(err)
 	}
-	if err = s.Init(); err != nil {
+	if err = screen.Init(); err != nil {
 		log.Panic(err)
 	}
-	e := engine.New(20, 20)
-	es := engine.NewService(e)
-    k := key.New(s)
-    k.Listen()
-	m := matrix.New(s, es, []int{10, 10})
-    m.Subscribe(k)
-    m.Subscribe(es)
-	m.Run()
+	store := store.New(20, 20)
+	keyEventListener := key.NewListener(screen)
+	rootComponent := root.New(screen, store, keyEventListener)
+	matrixComponent := matrix.New(screen, rootComponent, store, keyEventListener)
+	go matrixComponent.Run()
+	rootComponent.Run()
 }

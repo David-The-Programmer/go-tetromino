@@ -63,7 +63,3 @@ func animateClearingLines(sc tcell.Screen, s gotetromino.State) {
 	sc.Show()
 	time.Sleep(200 * time.Millisecond)
 }
-
-func stop(sc tcell.Screen) {
-	sc.Fini()
-}
