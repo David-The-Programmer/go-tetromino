@@ -1,4 +1,4 @@
-package matrix
+package ui
 
 import (
 	"github.com/David-The-Programmer/go-tetromino/engine"

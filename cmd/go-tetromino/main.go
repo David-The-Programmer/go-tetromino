@@ -5,8 +5,7 @@ import (
 
 	"github.com/David-The-Programmer/go-tetromino/event/key"
 	"github.com/David-The-Programmer/go-tetromino/store"
-	"github.com/David-The-Programmer/go-tetromino/ui/matrix"
-	"github.com/David-The-Programmer/go-tetromino/ui/root"
+	"github.com/David-The-Programmer/go-tetromino/ui"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -21,8 +20,6 @@ func main() {
 	}
 	store := store.New(20, 20)
 	keyEventListener := key.NewListener(screen)
-	rootComponent := root.New(screen, store, keyEventListener)
-	matrixComponent := matrix.New(screen, rootComponent, store, keyEventListener)
-	go matrixComponent.Run()
-	rootComponent.Run()
+	ui := ui.New(screen, store, keyEventListener)
+	ui.Run()
 }

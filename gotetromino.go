@@ -94,22 +94,6 @@ const (
 	Restart
 )
 
-type UIComponent interface {
+type UI interface {
 	Run()
-	Pos() []int
-	SetPos(pos []int)
-	Dimensions() []int
-	SetDimensions(dimensions []int)
-}
-
-type ParentUIComponent interface {
-	UIComponent
-	Attach(c ChildUIComponent)
-	Detach(c ChildUIComponent)
-	Publish()
-}
-
-type ChildUIComponent interface {
-	UIComponent
-	HandleNewInteraction(i Interaction)
 }

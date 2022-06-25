@@ -1,4 +1,4 @@
-package matrix
+package ui
 
 import (
 	"time"
@@ -9,28 +9,28 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func render(sc tcell.Screen, s gotetromino.State) {
+func (u *ui) render(s gotetromino.State) {
 	// if there were cleared lines from matrix in previous state, animate clearing the lines before rendering matrix of new state
 	if len(s.ClearedLinesRows) > 0 {
-		animateClearingLines(sc, s)
+		u.animateClearingLines(s)
 	}
-	renderMatrix(sc, s)
-	renderTetromino(sc, s)
+	u.renderMatrix(s)
+	u.renderTetromino(s)
 }
 
-func renderMatrix(sc tcell.Screen, s gotetromino.State) {
+func (u *ui) renderMatrix(s gotetromino.State) {
 	for row := 0; row < len(s.Matrix); row++ {
 		for col := 0; col < len(s.Matrix[row]); col++ {
 			st := tcell.StyleDefault
 			// TODO: Put Block type all in gotetromino.go instead
 			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
-			sc.SetContent(col, row, charForBlock(engine.Block(s.Matrix[row][col])), nil, st)
+			u.screen.SetContent(col, row, charForBlock(engine.Block(s.Matrix[row][col])), nil, st)
 		}
 	}
-	sc.Show()
+	u.screen.Show()
 }
 
-func renderTetromino(sc tcell.Screen, s gotetromino.State) {
+func (u *ui) renderTetromino(s gotetromino.State) {
 	x := s.CurrentTetrominoPos[1]
 	y := s.CurrentTetrominoPos[0]
 	for row := 0; row < len(s.CurrentTetromino); row++ {
@@ -44,22 +44,22 @@ func renderTetromino(sc tcell.Screen, s gotetromino.State) {
 			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
 				st := tcell.StyleDefault
 				st = st.Foreground(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
-				sc.SetContent(x+col, y+row, charForBlock(engine.Block(s.CurrentTetromino[row][col])), nil, st)
+				u.screen.SetContent(x+col, y+row, charForBlock(engine.Block(s.CurrentTetromino[row][col])), nil, st)
 			}
 
 		}
 	}
-	sc.Show()
+	u.screen.Show()
 }
 
-func animateClearingLines(sc tcell.Screen, s gotetromino.State) {
+func (u *ui) animateClearingLines(s gotetromino.State) {
 	for row := s.ClearedLinesRows[0]; row <= s.ClearedLinesRows[len(s.ClearedLinesRows)-1]; row++ {
 		for col := 1; col < len(s.Matrix[row])-1; col++ {
 			st := tcell.StyleDefault
 			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
-			sc.SetContent(col, row, '+', nil, st)
+			u.screen.SetContent(col, row, '+', nil, st)
 		}
 	}
-	sc.Show()
+	u.screen.Show()
 	time.Sleep(200 * time.Millisecond)
 }
