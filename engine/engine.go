@@ -145,8 +145,11 @@ func (e *engine) Step(a gotetromino.Action) {
 func (e *engine) Reset() {
 	e.state = spawnTetromino(e.state)
 	e.state = emptyMatrix(e.state, len(e.state.Matrix), len(e.state.Matrix[0]))
-	e.state.Over = false
 	e.state.Score = 0
+	e.state.Over = false
+	e.state.Level = 0
+	e.state.LineCount = 0
+	e.state.ClearedLinesRows = nil
 }
 
 // collision returns true if non-space blocks of the matrix overlap with non-space blocks of the tetromino in the given state
