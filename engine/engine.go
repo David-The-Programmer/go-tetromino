@@ -30,6 +30,7 @@ func (e *engine) Step(a gotetromino.Action) {
 	}
 	s := duplicate(e.state)
 	s = setClearedLinesRows(s, nil)
+	s = setClearedPrevLevel(s, false)
 	switch a {
 	case gotetromino.None:
 		s = moveTetromino(s, 1, 0)
@@ -50,6 +51,7 @@ func (e *engine) Step(a gotetromino.Action) {
 			s = incrementScore(s, calcPts(s.Level, len(rows)))
 		}
 		if clearedLevel(s) {
+			s = setClearedPrevLevel(s, true)
 			s = levelUp(s)
 		}
 		temp := spawnTetromino(s)
@@ -80,6 +82,7 @@ func (e *engine) Step(a gotetromino.Action) {
 				s = incrementScore(s, calcPts(s.Level, len(rows)))
 			}
 			if clearedLevel(s) {
+				s = setClearedPrevLevel(s, true)
 				s = levelUp(s)
 			}
 			temp := spawnTetromino(s)
@@ -108,6 +111,7 @@ func (e *engine) Step(a gotetromino.Action) {
 			s = incrementScore(s, calcPts(s.Level, len(rows)))
 		}
 		if clearedLevel(s) {
+			s = setClearedPrevLevel(s, true)
 			s = levelUp(s)
 		}
 		temp := spawnTetromino(s)
@@ -148,6 +152,7 @@ func (e *engine) Reset() {
 	e.state.Score = 0
 	e.state.Over = false
 	e.state.Level = 0
+	e.state.ClearedPrevLevel = false
 	e.state.LineCount = 0
 	e.state.ClearedLinesRows = nil
 }
@@ -190,6 +195,7 @@ func duplicate(s gotetromino.State) gotetromino.State {
 	state.Score = s.Score
 	state.Over = s.Over
 	state.Level = s.Level
+	state.ClearedPrevLevel = s.ClearedPrevLevel
 	state.LineCount = s.LineCount
 	state.ClearedLinesRows = append([]int{}, s.ClearedLinesRows...)
 
@@ -334,6 +340,13 @@ func incrementLineCount(s gotetromino.State, numLinesCleared int) gotetromino.St
 func clearedLevel(s gotetromino.State) bool {
 	const linesToClear = 10
 	return len(s.ClearedLinesRows) != 0 && s.LineCount%linesToClear == 0 && s.LineCount != 0
+}
+
+// setClearedPrevLevel sets the value of the ClearedPrevLevel flag field of the given state
+func setClearedPrevLevel(s gotetromino.State, v bool) gotetromino.State {
+	state := duplicate(s)
+	state.ClearedPrevLevel = v
+	return state
 }
 
 // levelUp returns a new state comprising of the given state with Level incremented by 1

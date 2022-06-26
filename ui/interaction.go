@@ -45,12 +45,6 @@ func (u *ui) Run() {
 	u.keyEventListener.Start()
 
 	for {
-		// newState := u.engine.State()
-		// if newState.Level-state.Level > 0 {
-		// 	u.tickDuration = u.tickDuration - time.Duration(newState.Level*int(u.tickDuration/10))
-		// 	u.ticker.Reset(u.tickDuration)
-		// }
-		// state = newState
 		select {
 		case i := <-u.interaction:
 			if i == gotetromino.Exit {

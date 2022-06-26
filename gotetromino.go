@@ -21,6 +21,8 @@ type State struct {
 	Over bool
 	// Level reflects the current level since the start of the game
 	Level int
+	// ClearedPrevLevel equals to true if level has been incremented (cleared previous level) after given action
+	ClearedPrevLevel bool
 	// LineCount reflects the total no. lines cleared since start of the game
 	LineCount int
 	// ClearedLinesRows contains all rows of cleared lines from the previous state, after the given action

@@ -25,6 +25,15 @@ func (u *ui) render(s gotetromino.State) {
 	u.renderMatrix(s)
 	u.renderTetromino(s)
 	u.renderStats(s)
+	if s.ClearedPrevLevel {
+		u.animateLevelUp(s)
+		// make animation faster as more levels are cleared
+		// TODO: Refactor limiting animation speed
+		if u.tickDuration > 80*time.Millisecond {
+			u.tickDuration = u.tickDuration - (80 * time.Millisecond)
+			u.ticker.Reset(u.tickDuration)
+		}
+	}
 }
 
 func (u *ui) renderMatrix(s gotetromino.State) {
@@ -98,4 +107,19 @@ func (u *ui) renderStats(s gotetromino.State) {
 		u.screen.SetContent(statsBoardX+i, statsBoardY, r, nil, st)
 	}
 	u.screen.Show()
+}
+
+func (u ui) animateLevelUp(s gotetromino.State) {
+	screenWidth, screenHeight := u.screen.Size()
+	matrixX := (screenWidth - matrixWidth) / 2
+	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
+	st := tcell.StyleDefault
+	levelUpBanner := "LEVEL UP!"
+	levelUpBannerX := matrixX + ((matrixWidth - len(levelUpBanner)) / 2)
+	levelUpBannerY := matrixY + (matrixHeight / 2)
+	for i, r := range levelUpBanner {
+		u.screen.SetContent(levelUpBannerX+i, levelUpBannerY, r, nil, st)
+	}
+	u.screen.Show()
+	time.Sleep(700 * time.Millisecond)
 }
