@@ -17,8 +17,6 @@ type ui struct {
 	state            chan gotetromino.State
 	ticker           *time.Ticker
 	tickDuration     time.Duration
-	position         []int
-	dimensions       []int
 }
 
 func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) gotetromino.UI {
