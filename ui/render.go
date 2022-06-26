@@ -21,6 +21,7 @@ func (u *ui) render(s gotetromino.State) {
 	if len(s.ClearedLinesRows) > 0 {
 		u.animateClearingLines(s)
 	}
+	u.screen.Clear()
 	u.renderMatrix(s)
 	u.renderTetromino(s)
 	u.renderStats(s)
