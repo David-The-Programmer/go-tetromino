@@ -155,6 +155,7 @@ func (e *engine) Reset() {
 	e.state.ClearedPrevLevel = false
 	e.state.LineCount = 0
 	e.state.ClearedLinesRows = nil
+	e.state.Bag = nil
 }
 
 // collision returns true if non-space blocks of the matrix overlap with non-space blocks of the tetromino in the given state
@@ -198,6 +199,7 @@ func duplicate(s gotetromino.State) gotetromino.State {
 	state.ClearedPrevLevel = s.ClearedPrevLevel
 	state.LineCount = s.LineCount
 	state.ClearedLinesRows = append([]int{}, s.ClearedLinesRows...)
+	state.Bag = append([][][]int{}, s.Bag...)
 
 	return state
 }
@@ -264,7 +266,11 @@ func moveTetromino(s gotetromino.State, numRows int, numCols int) gotetromino.St
 // spawnTetromino returns a new state, which comprises of the given state that has new tetromino is spawned
 func spawnTetromino(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
-	state.CurrentTetromino = randTetromino()
+	if len(state.Bag) == 0 {
+		state = generateBag(state)
+	}
+	state, tetromino := pickTetromino(state)
+	state.CurrentTetromino = tetromino
 	state.CurrentTetrominoPos = tetrominoStartPos(state.CurrentTetromino, state.Matrix)
 	return state
 }

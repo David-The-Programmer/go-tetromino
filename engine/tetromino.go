@@ -2,7 +2,8 @@ package engine
 
 import (
 	"math/rand"
-	"time"
+
+	gotetromino "github.com/David-The-Programmer/go-tetromino"
 )
 
 // Tetrimino matrices follow the NES Rotation Systems (https://strategywiki.org/wiki/Tetris/Rotation_systems)
@@ -51,8 +52,10 @@ var zTetrominoMatrix = [][]int{
 	{int(Space), int(ZTetromino), int(ZTetromino)},
 }
 
-func randTetromino() [][]int {
-	t := [][][]int{
+// generateBag returns a new state, which comprises of the given state with Bag with all tetrominos shuffled in random order
+func generateBag(s gotetromino.State) gotetromino.State {
+	state := duplicate(s)
+	state.Bag = [][][]int{
 		iTetrominoMatrix,
 		jTetrominoMatrix,
 		lTetrominoMatrix,
@@ -61,8 +64,19 @@ func randTetromino() [][]int {
 		tTetrominoMatrix,
 		zTetrominoMatrix,
 	}
-	rand.Seed(time.Now().Unix())
-	return t[rand.Intn(len(t))]
+	rand.Shuffle(len(state.Bag), func(i, j int) {
+		state.Bag[i], state.Bag[j] = state.Bag[j], state.Bag[i]
+	})
+	return state
+}
+
+// pickTetromino returns a new state and a tetrimino from Bag
+// the new state comprises of the given state with Bag having its 1st element(tetromino) removed
+func pickTetromino(s gotetromino.State) (gotetromino.State, [][]int) {
+	state := duplicate(s)
+	tetromino := state.Bag[0]
+	state.Bag = state.Bag[1:]
+	return state, tetromino
 }
 
 type direction int

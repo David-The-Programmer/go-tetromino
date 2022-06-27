@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/David-The-Programmer/go-tetromino/event/key"
 	"github.com/David-The-Programmer/go-tetromino/store"
@@ -11,6 +13,7 @@ import (
 )
 
 func main() {
+	rand.Seed(time.Now().Unix())
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Panic(err)

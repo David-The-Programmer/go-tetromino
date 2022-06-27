@@ -27,6 +27,8 @@ type State struct {
 	LineCount int
 	// ClearedLinesRows contains all rows of cleared lines from the previous state, after the given action
 	ClearedLinesRows []int
+	// Bag is a bag of randomly shuffled tetrominos
+	Bag [][][]int
 }
 
 type Service interface {
