@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	matrixWidth      = 20
-	matrixHeight     = 20
+	matrixWidth      = 24
+	matrixHeight     = 21
 	statsBoardHeight = 2
 )
 

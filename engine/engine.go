@@ -11,8 +11,10 @@ type engine struct {
 // New returns a new instance of gotetromino.Engine
 func New() gotetromino.Engine {
 	const (
-		numMatrixRows = 20
-		numMatrixCols = 10
+		// 20+1 to account for bottom boundary
+		numMatrixRows = 21
+		// 10 +2 to account for left & right boundary
+		numMatrixCols = 12
 	)
 	e := engine{}
 	e.state = emptyMatrix(e.state, numMatrixRows, numMatrixCols)
@@ -168,6 +170,9 @@ func collision(s gotetromino.State) bool {
 	y := s.CurrentTetrominoPos[0]
 	for i := 0; i < len(s.CurrentTetromino); i++ {
 		for j := 0; j < len(s.CurrentTetromino[i]); j++ {
+			if x+j > len(s.Matrix[0])-1 || y+i > len(s.Matrix) {
+				continue
+			}
 			if s.CurrentTetromino[i][j] != int(Space) && s.Matrix[y+i][x+j] != int(Space) {
 				return true
 			}
