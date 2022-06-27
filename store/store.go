@@ -7,12 +7,12 @@ import (
 	"github.com/David-The-Programmer/go-tetromino/engine"
 )
 
-func New(numMatrixRows int, numMatrixCols int) gotetromino.Store {
+func New() gotetromino.Store {
 	action := make(chan gotetromino.Action)
 	reset := make(chan bool)
 	stop := make(chan bool)
 	return &store{
-		engine: engine.New(numMatrixRows, numMatrixCols),
+		engine: engine.New(),
 		action: action,
 		reset:  reset,
 		stop:   stop,

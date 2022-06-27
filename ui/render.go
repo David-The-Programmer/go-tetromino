@@ -17,16 +17,11 @@ const (
 )
 
 func (u *ui) render(s gotetromino.State) {
-	// if there were cleared lines from matrix in previous state, animate clearing the lines before rendering matrix of new state
-	if len(s.ClearedLinesRows) > 0 {
-		u.animateClearingLines(s)
-	}
 	u.screen.Clear()
 	u.renderMatrix(s)
 	u.renderTetromino(s)
 	u.renderStats(s)
 	if s.ClearedPrevLevel {
-		u.animateLevelUp(s)
 		// make animation faster as more levels are cleared
 		// TODO: Refactor limiting animation speed
 		if u.tickDuration > 80*time.Millisecond {
@@ -37,25 +32,62 @@ func (u *ui) render(s gotetromino.State) {
 }
 
 func (u *ui) renderMatrix(s gotetromino.State) {
+	numRows := len(s.Matrix)
+	numCols := len(s.Matrix[0])
+
 	screenWidth, screenHeight := u.screen.Size()
+
 	matrixX := (screenWidth - matrixWidth) / 2
 	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
 
-	for row := 0; row < len(s.Matrix); row++ {
-		for col := 0; col < len(s.Matrix[row]); col++ {
+	blockX := matrixX
+	blockY := matrixY
+	blockWidth := matrixWidth / numCols
+	blockHeight := matrixHeight / numRows
+
+	for row := 0; row < numRows; row++ {
+		for col := 0; col < numCols; col++ {
 			st := tcell.StyleDefault
 			// TODO: Put Block type all in gotetromino.go instead
 			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
-			u.screen.SetContent(matrixX+col, matrixY+row, charForBlock(engine.Block(s.Matrix[row][col])), nil, st)
+			// make sure all tetrominos do not have unwanted lines
+			if engine.Block(s.Matrix[row][col]) != engine.Boundary && engine.Block(s.Matrix[row][col]) != engine.Space {
+				st = st.Background(colourForBlock(engine.Block(s.Matrix[row][col])))
+			}
+			u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.Matrix[row][col])), st)
+			blockX += blockWidth
 		}
+		blockX = matrixX
+		blockY += blockHeight
 	}
 	u.screen.Show()
 }
 
+func (u *ui) renderBlock(x, y, w, h int, ch rune, st tcell.Style) {
+	cellX := x
+	cellY := y
+	for j := 0; j < h; j++ {
+		for i := 0; i < w; i++ {
+			u.screen.SetContent(cellX, cellY, ch, nil, st)
+			cellX += 1
+		}
+		cellY += 1
+	}
+}
+
 func (u *ui) renderTetromino(s gotetromino.State) {
+	numRows := len(s.Matrix)
+	numCols := len(s.Matrix[0])
+
 	screenWidth, screenHeight := u.screen.Size()
+
 	matrixX := (screenWidth - matrixWidth) / 2
 	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
+
+	blockX := 0
+	blockY := 0
+	blockWidth := matrixWidth / numCols
+	blockHeight := matrixHeight / numRows
 
 	x := s.CurrentTetrominoPos[1]
 	y := s.CurrentTetrominoPos[0]
@@ -68,30 +100,17 @@ func (u *ui) renderTetromino(s gotetromino.State) {
 				continue
 			}
 			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
+				blockX = matrixX + (matrixCol * blockWidth)
+				blockY = matrixY + (matrixRow * blockHeight)
 				st := tcell.StyleDefault
 				st = st.Foreground(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
-				u.screen.SetContent(matrixX+matrixCol, matrixY+matrixRow, charForBlock(engine.Block(s.CurrentTetromino[row][col])), nil, st)
+				st = st.Background(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
+				u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.CurrentTetromino[row][col])), st)
 			}
 
 		}
 	}
 	u.screen.Show()
-}
-
-func (u *ui) animateClearingLines(s gotetromino.State) {
-	screenWidth, screenHeight := u.screen.Size()
-	matrixX := (screenWidth - matrixWidth) / 2
-	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
-
-	for row := s.ClearedLinesRows[0]; row <= s.ClearedLinesRows[len(s.ClearedLinesRows)-1]; row++ {
-		for col := 1; col < len(s.Matrix[row])-1; col++ {
-			st := tcell.StyleDefault
-			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
-			u.screen.SetContent(matrixX+col, matrixY+row, '+', nil, st)
-		}
-	}
-	u.screen.Show()
-	time.Sleep(200 * time.Millisecond)
 }
 
 func (u *ui) renderStats(s gotetromino.State) {
@@ -107,19 +126,4 @@ func (u *ui) renderStats(s gotetromino.State) {
 		u.screen.SetContent(statsBoardX+i, statsBoardY, r, nil, st)
 	}
 	u.screen.Show()
-}
-
-func (u ui) animateLevelUp(s gotetromino.State) {
-	screenWidth, screenHeight := u.screen.Size()
-	matrixX := (screenWidth - matrixWidth) / 2
-	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
-	st := tcell.StyleDefault
-	levelUpBanner := "LEVEL UP!"
-	levelUpBannerX := matrixX + ((matrixWidth - len(levelUpBanner)) / 2)
-	levelUpBannerY := matrixY + (matrixHeight / 2)
-	for i, r := range levelUpBanner {
-		u.screen.SetContent(levelUpBannerX+i, levelUpBannerY, r, nil, st)
-	}
-	u.screen.Show()
-	time.Sleep(700 * time.Millisecond)
 }

@@ -21,7 +21,7 @@ func main() {
 	if err = screen.Init(); err != nil {
 		log.Panic(err)
 	}
-	store := store.New(20, 20)
+	store := store.New()
 	keyEventListener := key.NewListener(screen)
 	ui := ui.New(screen, store, keyEventListener)
 	ui.Run()

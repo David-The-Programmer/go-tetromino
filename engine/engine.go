@@ -9,7 +9,11 @@ type engine struct {
 }
 
 // New returns a new instance of gotetromino.Engine
-func New(numMatrixRows int, numMatrixCols int) gotetromino.Engine {
+func New() gotetromino.Engine {
+	const (
+		numMatrixRows = 20
+		numMatrixCols = 10
+	)
 	e := engine{}
 	e.state = emptyMatrix(e.state, numMatrixRows, numMatrixCols)
 	e.state = spawnTetromino(e.state)
@@ -384,11 +388,9 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 }
 
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
-// TODO: Finish reset of state
 // TODO: Finish having next tetromino
-// TODO: Finish making the randTetromino func generate loopable patterns of tetrominos for easier gameplay
 // TODO: Finish ghost piece
-// TODO: Need to fix bug where person can hold tetrominoes indefinitely using arrow keys
-// TODO: Need to have different delays between falling and movement of pieces
+// TODO: Finish reset of state
+// TODO: Need to fix bug where game freezes after too quick of key presses
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field
