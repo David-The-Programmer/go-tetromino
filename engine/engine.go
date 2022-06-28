@@ -11,10 +11,8 @@ type engine struct {
 // New returns a new instance of gotetromino.Engine
 func New() gotetromino.Engine {
 	const (
-		// 20+1 to account for bottom boundary
-		numMatrixRows = 21
-		// 10 +2 to account for left & right boundary
-		numMatrixCols = 12
+		numMatrixRows = 20
+		numMatrixCols = 10
 	)
 	e := engine{}
 	e.state = emptyMatrix(e.state, numMatrixRows, numMatrixCols)
@@ -40,7 +38,7 @@ func (e *engine) Step(a gotetromino.Action) {
 	switch a {
 	case gotetromino.None:
 		s = moveTetromino(s, 1, 0)
-		if !collision(s) {
+		if !bottomBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			e.state = s
 			return
 		}
@@ -62,7 +60,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		}
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
-		if collision(temp) {
+		if overlapExistingTBlock(temp) {
 			s = over(s)
 		} else {
 			s = temp
@@ -71,9 +69,8 @@ func (e *engine) Step(a gotetromino.Action) {
 	case gotetromino.SoftDrop:
 		const maxSteps = 2
 		s = moveTetromino(s, maxSteps, 0)
-		if collision(s) {
-			// rollback on movement if step exceeds the bottom boundary
-			for collision(s) {
+		if bottomBoundaryExceeded(s) || overlapExistingTBlock(s) {
+			for bottomBoundaryExceeded(s) || overlapExistingTBlock(s) {
 				s = moveTetromino(s, -1, 0)
 			}
 			// lock tetromino into matrix if collision occurs
@@ -93,7 +90,7 @@ func (e *engine) Step(a gotetromino.Action) {
 			}
 			temp := spawnTetromino(s)
 			// if unable to spawn new tetromino due to existing pieces already there, game is over
-			if collision(temp) {
+			if overlapExistingTBlock(temp) {
 				s = over(s)
 			} else {
 				s = temp
@@ -101,7 +98,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		}
 		e.state = s
 	case gotetromino.HardDrop:
-		for !collision(s) {
+		for !bottomBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			s = moveTetromino(s, 1, 0)
 		}
 		s = moveTetromino(s, -1, 0)
@@ -122,7 +119,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		}
 		temp := spawnTetromino(s)
 		// if unable to spawn new tetromino due to existing pieces already there, game is over
-		if collision(temp) {
+		if overlapExistingTBlock(temp) {
 			s = over(s)
 		} else {
 			s = temp
@@ -130,22 +127,22 @@ func (e *engine) Step(a gotetromino.Action) {
 		e.state = s
 	case gotetromino.Left:
 		s = moveTetromino(s, 0, -1)
-		if !collision(s) {
+		if !leftBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			e.state = s
 		}
 	case gotetromino.Right:
 		s = moveTetromino(s, 0, 1)
-		if !collision(s) {
+		if !rightBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			e.state = s
 		}
 	case gotetromino.RotateCW:
 		s = rotateTetrimino(s, clockwise)
-		if !collision(s) {
+		if !leftBoundaryExceeded(s) && !rightBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			e.state = s
 		}
 	case gotetromino.RotateACW:
 		s = rotateTetrimino(s, antiClockwise)
-		if !collision(s) {
+		if !leftBoundaryExceeded(s) && !rightBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			e.state = s
 		}
 	}
@@ -164,22 +161,78 @@ func (e *engine) Reset() {
 	e.state.Bag = nil
 }
 
-// collision returns true if non-space blocks of the matrix overlap with non-space blocks of the tetromino in the given state
-func collision(s gotetromino.State) bool {
-	x := s.CurrentTetrominoPos[1]
-	y := s.CurrentTetrominoPos[0]
-	for i := 0; i < len(s.CurrentTetromino); i++ {
-		for j := 0; j < len(s.CurrentTetromino[i]); j++ {
-			if x+j > len(s.Matrix[0])-1 || y+i > len(s.Matrix) {
+// leftBoundaryExceeded returns true if CurrentTetrominoPos exceeds the left boundary
+func leftBoundaryExceeded(s gotetromino.State) bool {
+	tMatrixCol := s.CurrentTetrominoPos[1]
+	for r := 0; r < len(s.CurrentTetromino); r++ {
+		for c := 0; c < len(s.CurrentTetromino); c++ {
+			if s.CurrentTetromino[r][c] == int(Space) {
 				continue
 			}
-			if s.CurrentTetromino[i][j] != int(Space) && s.Matrix[y+i][x+j] != int(Space) {
+			tBlockCol := tMatrixCol + c
+			if tBlockCol < 0 {
 				return true
 			}
 		}
 	}
 	return false
+}
 
+// rightBoundaryExceeded returns true if CurrentTetrominoPos exceeds the right boundary
+func rightBoundaryExceeded(s gotetromino.State) bool {
+	tMatrixCol := s.CurrentTetrominoPos[1]
+	for r := 0; r < len(s.CurrentTetromino); r++ {
+		for c := 0; c < len(s.CurrentTetromino); c++ {
+			if s.CurrentTetromino[r][c] == int(Space) {
+				continue
+			}
+			tBlockCol := tMatrixCol + c
+			if tBlockCol > len(s.Matrix[0])-1 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// bottomBoundaryExceeded returns true if CurrentTetrominoPos exceeds the bottom boundary
+func bottomBoundaryExceeded(s gotetromino.State) bool {
+	tMatrixRow := s.CurrentTetrominoPos[0]
+	for r := 0; r < len(s.CurrentTetromino); r++ {
+		for c := 0; c < len(s.CurrentTetromino); c++ {
+			if s.CurrentTetromino[r][c] == int(Space) {
+				continue
+			}
+			tBlockRow := tMatrixRow + r
+			if tBlockRow > len(s.Matrix)-1 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// overlapExistingTBlock returns true if CurrentTetromino overlaps with another tetromino in the Matrix
+// overlapExistingTBlock ignores any CurrentTetromino block that exceeds left, right or bottom boundary for overlapping
+func overlapExistingTBlock(s gotetromino.State) bool {
+	tMatrixRow := s.CurrentTetrominoPos[0]
+	tMatrixCol := s.CurrentTetrominoPos[1]
+	for r := 0; r < len(s.CurrentTetromino); r++ {
+		for c := 0; c < len(s.CurrentTetromino); c++ {
+			if s.CurrentTetromino[r][c] == int(Space) {
+				continue
+			}
+			tBlockRow := tMatrixRow + r
+			tBlockCol := tMatrixCol + c
+			if tBlockRow > len(s.Matrix)-1 || tBlockCol < 0 || tBlockCol > len(s.Matrix[0])-1 {
+				continue
+			}
+			if s.Matrix[tBlockRow][tBlockCol] != int(Space) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // duplicate returns a deep copy of the given state
@@ -223,17 +276,6 @@ func emptyMatrix(s gotetromino.State, numRows int, numCols int) gotetromino.Stat
 			matrix[r] = append(matrix[r], int(Space))
 		}
 	}
-	// encode boundaries into matrix
-	for i := 0; i < len(matrix); i++ {
-		// leftmost boundary
-		matrix[i][0] = int(Boundary)
-		// rightmost boundary
-		matrix[i][len(matrix[i])-1] = int(Boundary)
-	}
-	// bottom boundary
-	for i := 0; i < len(matrix[len(matrix)-1]); i++ {
-		matrix[len(matrix)-1][i] = int(Boundary)
-	}
 	state := duplicate(s)
 	state.Matrix = matrix
 	return state
@@ -249,7 +291,7 @@ func lockTetromino(s gotetromino.State) gotetromino.State {
 		for j := 0; j < len(state.CurrentTetromino[i]); j++ {
 			matrixRow := y + i
 			matrixCol := x + j
-			if matrixRow > len(state.Matrix)-1 || matrixCol > len(state.Matrix[0])-1 {
+			if matrixRow < 0 || matrixCol < 0 || matrixRow > len(state.Matrix)-1 || matrixCol > len(state.Matrix[0])-1 {
 				continue
 			}
 

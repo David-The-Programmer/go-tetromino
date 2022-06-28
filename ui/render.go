@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	matrixWidth      = 24
-	matrixHeight     = 21
+	matrixWidth      = 20
+	matrixHeight     = 20
 	statsBoardHeight = 2
 )
 
@@ -40,6 +40,41 @@ func (u *ui) renderMatrix(s gotetromino.State) {
 	matrixX := (screenWidth - matrixWidth) / 2
 	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
 
+	// left boundary
+	leftBoundaryX := matrixX - 1
+	for i := matrixY; i <= matrixY+matrixHeight; i++ {
+		leftBoundaryY := i
+		st := tcell.StyleDefault
+		st = st.Foreground(tcell.ColorGray)
+		u.renderBlock(leftBoundaryX, leftBoundaryY, 1, 1, tcell.RuneVLine, st)
+	}
+
+	// right boundary
+	rightBoundaryX := matrixX + matrixWidth
+	for i := matrixY; i <= matrixY+matrixHeight; i++ {
+		rightBoundaryY := i
+		st := tcell.StyleDefault
+		st = st.Foreground(tcell.ColorGray)
+		u.renderBlock(rightBoundaryX, rightBoundaryY, 1, 1, tcell.RuneVLine, st)
+	}
+
+	// bottom boundary
+	bottomBoundaryY := matrixY + matrixHeight
+	for i := matrixX - 1; i <= matrixX+matrixWidth; i++ {
+		ch := tcell.RuneHLine
+		if i == matrixX-1 {
+			ch = tcell.RuneLLCorner
+		}
+		if i == matrixX+matrixWidth {
+			ch = tcell.RuneLRCorner
+		}
+		bottomBoundaryX := i
+		st := tcell.StyleDefault
+		st = st.Foreground(tcell.ColorGray)
+		u.renderBlock(bottomBoundaryX, bottomBoundaryY, 1, 1, ch, st)
+
+	}
+
 	blockX := matrixX
 	blockY := matrixY
 	blockWidth := matrixWidth / numCols
@@ -51,7 +86,7 @@ func (u *ui) renderMatrix(s gotetromino.State) {
 			// TODO: Put Block type all in gotetromino.go instead
 			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
 			// make sure all tetrominos do not have unwanted lines
-			if engine.Block(s.Matrix[row][col]) != engine.Boundary && engine.Block(s.Matrix[row][col]) != engine.Space {
+			if engine.Block(s.Matrix[row][col]) != engine.Space {
 				st = st.Background(colourForBlock(engine.Block(s.Matrix[row][col])))
 			}
 			u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.Matrix[row][col])), st)
@@ -96,7 +131,7 @@ func (u *ui) renderTetromino(s gotetromino.State) {
 			// only override rendering what is a space block
 			matrixRow := y + row
 			matrixCol := x + col
-			if matrixRow > len(s.Matrix)-1 || matrixCol > len(s.Matrix[0])-1 {
+			if matrixRow < 0 || matrixCol < 0 || matrixRow > len(s.Matrix)-1 || matrixCol > len(s.Matrix[0])-1 {
 				continue
 			}
 			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
