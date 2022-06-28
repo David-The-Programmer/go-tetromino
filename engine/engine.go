@@ -17,6 +17,7 @@ func New() gotetromino.Engine {
 	e := engine{}
 	e.state = emptyMatrix(e.state, numMatrixRows, numMatrixCols)
 	e.state = spawnTetromino(e.state)
+	e.state = calcGhostTetrominoPos(e.state)
 	return &e
 }
 
@@ -40,7 +41,7 @@ func (e *engine) Step(a gotetromino.Action) {
 		s = moveTetromino(s, 1, 0)
 		if !bottomBoundaryExceeded(s) && !overlapExistingTBlock(s) {
 			e.state = s
-			return
+			break
 		}
 		s = moveTetromino(s, -1, 0)
 		// lock tetromino into matrix once collision occurs
@@ -146,12 +147,14 @@ func (e *engine) Step(a gotetromino.Action) {
 			e.state = s
 		}
 	}
+	e.state = calcGhostTetrominoPos(e.state)
 }
 
 // Reset resets the state of the game back to its initial state
 func (e *engine) Reset() {
 	e.state = spawnTetromino(e.state)
 	e.state = emptyMatrix(e.state, len(e.state.Matrix), len(e.state.Matrix[0]))
+	e.state = calcGhostTetrominoPos(e.state)
 	e.state.Score = 0
 	e.state.Over = false
 	e.state.Level = 0
@@ -262,6 +265,7 @@ func duplicate(s gotetromino.State) gotetromino.State {
 	state.LineCount = s.LineCount
 	state.ClearedLinesRows = append([]int{}, s.ClearedLinesRows...)
 	state.Bag = append([][][]int{}, s.Bag...)
+	state.GhostTetrominoPos = append([]int{}, s.GhostTetrominoPos...)
 
 	return state
 }
@@ -323,6 +327,18 @@ func spawnTetromino(s gotetromino.State) gotetromino.State {
 	state, tetromino := pickTetromino(state)
 	state.CurrentTetromino = tetromino
 	state.CurrentTetrominoPos = tetrominoStartPos(state.CurrentTetromino, state.Matrix)
+	return state
+}
+
+// calcGhostTetrominoPos returns a new state, which comprises of the given state with the new position of the ghost tetromino
+func calcGhostTetrominoPos(s gotetromino.State) gotetromino.State {
+	temp := duplicate(s)
+	for !bottomBoundaryExceeded(temp) && !overlapExistingTBlock(temp) {
+		temp = moveTetromino(temp, 1, 0)
+	}
+	temp = moveTetromino(temp, -1, 0)
+	state := duplicate(s)
+	state.GhostTetrominoPos = append([]int{}, temp.CurrentTetrominoPos...)
 	return state
 }
 
@@ -434,9 +450,10 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
+// TODO: Fix the spawn pos of tetromino
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
+// TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
 // TODO: Finish having next tetromino
-// TODO: Finish ghost piece
 // TODO: Finish reset of state
 // TODO: Need to fix bug where game freezes after too quick of key presses
 

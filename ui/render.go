@@ -19,6 +19,7 @@ const (
 func (u *ui) render(s gotetromino.State) {
 	u.screen.Clear()
 	u.renderMatrix(s)
+	u.renderGhostTetromino(s)
 	u.renderTetromino(s)
 	u.renderStats(s)
 	if s.ClearedPrevLevel {
@@ -140,6 +141,45 @@ func (u *ui) renderTetromino(s gotetromino.State) {
 				st := tcell.StyleDefault
 				st = st.Foreground(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
 				st = st.Background(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
+				u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.CurrentTetromino[row][col])), st)
+			}
+
+		}
+	}
+	u.screen.Show()
+}
+
+func (u *ui) renderGhostTetromino(s gotetromino.State) {
+	numRows := len(s.Matrix)
+	numCols := len(s.Matrix[0])
+
+	screenWidth, screenHeight := u.screen.Size()
+
+	matrixX := (screenWidth - matrixWidth) / 2
+	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
+
+	blockX := 0
+	blockY := 0
+	blockWidth := matrixWidth / numCols
+	blockHeight := matrixHeight / numRows
+
+	x := s.GhostTetrominoPos[1]
+	y := s.GhostTetrominoPos[0]
+	for row := 0; row < len(s.CurrentTetromino); row++ {
+		for col := 0; col < len(s.CurrentTetromino[row]); col++ {
+			// only override rendering what is a space block
+			matrixRow := y + row
+			matrixCol := x + col
+			if matrixRow < 0 || matrixCol < 0 || matrixRow > len(s.Matrix)-1 || matrixCol > len(s.Matrix[0])-1 {
+				continue
+			}
+			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) && engine.Block(s.CurrentTetromino[row][col]) != engine.Space {
+				blockX = matrixX + (matrixCol * blockWidth)
+				blockY = matrixY + (matrixRow * blockHeight)
+				st := tcell.StyleDefault
+				st = st.Foreground(tcell.ColorGray)
+				st = st.Background(tcell.ColorGray)
+				// st = st.Background(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
 				u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.CurrentTetromino[row][col])), st)
 			}
 

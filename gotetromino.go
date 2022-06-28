@@ -29,6 +29,8 @@ type State struct {
 	ClearedLinesRows []int
 	// Bag is a bag of randomly shuffled tetrominos
 	Bag [][][]int
+	// GhostTetrominoPos reflects the position of the CurrentTetromino after it is drop from its current position
+	GhostTetrominoPos []int
 }
 
 type Service interface {
