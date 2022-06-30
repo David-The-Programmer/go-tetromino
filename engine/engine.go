@@ -455,6 +455,7 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 // TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
 // TODO: Finish having next tetromino
 // TODO: Finish reset of state
+// TODO: Refactor and simplify current store & key event listener to one event loop?
 // TODO: Need to fix bug where game freezes after too quick of key presses
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field

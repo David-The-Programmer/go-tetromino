@@ -41,40 +41,7 @@ func (u *ui) renderMatrix(s gotetromino.State) {
 	matrixX := (screenWidth - matrixWidth) / 2
 	matrixY := ((screenHeight - matrixHeight - statsBoardHeight) / 2) + statsBoardHeight
 
-	// left boundary
-	leftBoundaryX := matrixX - 1
-	for i := matrixY; i <= matrixY+matrixHeight; i++ {
-		leftBoundaryY := i
-		st := tcell.StyleDefault
-		st = st.Foreground(tcell.ColorGray)
-		u.renderBlock(leftBoundaryX, leftBoundaryY, 1, 1, tcell.RuneVLine, st)
-	}
-
-	// right boundary
-	rightBoundaryX := matrixX + matrixWidth
-	for i := matrixY; i <= matrixY+matrixHeight; i++ {
-		rightBoundaryY := i
-		st := tcell.StyleDefault
-		st = st.Foreground(tcell.ColorGray)
-		u.renderBlock(rightBoundaryX, rightBoundaryY, 1, 1, tcell.RuneVLine, st)
-	}
-
-	// bottom boundary
-	bottomBoundaryY := matrixY + matrixHeight
-	for i := matrixX - 1; i <= matrixX+matrixWidth; i++ {
-		ch := tcell.RuneHLine
-		if i == matrixX-1 {
-			ch = tcell.RuneLLCorner
-		}
-		if i == matrixX+matrixWidth {
-			ch = tcell.RuneLRCorner
-		}
-		bottomBoundaryX := i
-		st := tcell.StyleDefault
-		st = st.Foreground(tcell.ColorGray)
-		u.renderBlock(bottomBoundaryX, bottomBoundaryY, 1, 1, ch, st)
-
-	}
+	u.renderBorder(matrixX-1, matrixY-1, matrixWidth+1, matrixHeight+1, tcell.ColorGrey)
 
 	blockX := matrixX
 	blockY := matrixY
@@ -83,32 +50,16 @@ func (u *ui) renderMatrix(s gotetromino.State) {
 
 	for row := 0; row < numRows; row++ {
 		for col := 0; col < numCols; col++ {
-			st := tcell.StyleDefault
 			// TODO: Put Block type all in gotetromino.go instead
-			st = st.Foreground(colourForBlock(engine.Block(s.Matrix[row][col])))
-			// make sure all tetrominos do not have unwanted lines
 			if engine.Block(s.Matrix[row][col]) != engine.Space {
-				st = st.Background(colourForBlock(engine.Block(s.Matrix[row][col])))
+				u.renderBlock(blockX, blockY, blockWidth, blockHeight, colourForBlock(engine.Block(s.Matrix[row][col])))
 			}
-			u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.Matrix[row][col])), st)
 			blockX += blockWidth
 		}
 		blockX = matrixX
 		blockY += blockHeight
 	}
 	u.screen.Show()
-}
-
-func (u *ui) renderBlock(x, y, w, h int, ch rune, st tcell.Style) {
-	cellX := x
-	cellY := y
-	for j := 0; j < h; j++ {
-		for i := 0; i < w; i++ {
-			u.screen.SetContent(cellX, cellY, ch, nil, st)
-			cellX += 1
-		}
-		cellY += 1
-	}
 }
 
 func (u *ui) renderTetromino(s gotetromino.State) {
@@ -135,13 +86,10 @@ func (u *ui) renderTetromino(s gotetromino.State) {
 			if matrixRow < 0 || matrixCol < 0 || matrixRow > len(s.Matrix)-1 || matrixCol > len(s.Matrix[0])-1 {
 				continue
 			}
-			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) {
+			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) && engine.Block(s.CurrentTetromino[row][col]) != engine.Space {
 				blockX = matrixX + (matrixCol * blockWidth)
 				blockY = matrixY + (matrixRow * blockHeight)
-				st := tcell.StyleDefault
-				st = st.Foreground(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
-				st = st.Background(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
-				u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.CurrentTetromino[row][col])), st)
+				u.renderBlock(blockX, blockY, blockWidth, blockHeight, colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
 			}
 
 		}
@@ -176,11 +124,7 @@ func (u *ui) renderGhostTetromino(s gotetromino.State) {
 			if s.Matrix[matrixRow][matrixCol] == int(engine.Space) && engine.Block(s.CurrentTetromino[row][col]) != engine.Space {
 				blockX = matrixX + (matrixCol * blockWidth)
 				blockY = matrixY + (matrixRow * blockHeight)
-				st := tcell.StyleDefault
-				st = st.Foreground(tcell.ColorGray)
-				st = st.Background(tcell.ColorGray)
-				// st = st.Background(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
-				u.renderBlock(blockX, blockY, blockWidth, blockHeight, charForBlock(engine.Block(s.CurrentTetromino[row][col])), st)
+				u.renderBlock(blockX, blockY, blockWidth, blockHeight, tcell.ColorGray)
 			}
 
 		}
@@ -192,8 +136,8 @@ func (u *ui) renderStats(s gotetromino.State) {
 	screenWidth, screenHeight := u.screen.Size()
 	matrixX := (screenWidth - matrixWidth) / 2
 	st := tcell.StyleDefault
-	levelStr := fmt.Sprintf("Level: %d", s.Level)
-	scoreStr := fmt.Sprintf("Score: %d", s.Score)
+	levelStr := fmt.Sprintf("LEVEL: %d", s.Level)
+	scoreStr := fmt.Sprintf("SCORE: %d", s.Score)
 	stats := fmt.Sprintf("%s  %s", levelStr, scoreStr)
 	statsBoardX := matrixX + ((matrixWidth - len(stats)) / 2)
 	statsBoardY := (screenHeight - matrixHeight - statsBoardHeight) / 2
@@ -201,4 +145,39 @@ func (u *ui) renderStats(s gotetromino.State) {
 		u.screen.SetContent(statsBoardX+i, statsBoardY, r, nil, st)
 	}
 	u.screen.Show()
+}
+
+func (u *ui) renderBlock(x, y, w, h int, c tcell.Color) {
+	cellX := x
+	cellY := y
+	st := tcell.StyleDefault.Foreground(c).Background(c)
+	for j := 0; j < h; j++ {
+		for i := 0; i < w; i++ {
+			u.screen.SetContent(cellX, cellY, tcell.RuneBlock, nil, st)
+			cellX += 1
+		}
+		cellY += 1
+	}
+}
+
+func (u *ui) renderBorder(x, y, w, h int, c tcell.Color) {
+	st := tcell.StyleDefault.Foreground(c)
+	// left & right border
+	for i := y + 1; i <= y+h-1; i++ {
+		u.screen.SetContent(x, i, tcell.RuneVLine, nil, st)
+		u.screen.SetContent(x+w, i, tcell.RuneVLine, nil, st)
+	}
+
+	// top & bottom border
+	for i := x + 1; i <= x+w-1; i++ {
+		u.screen.SetContent(i, y, tcell.RuneHLine, nil, st)
+		u.screen.SetContent(i, y+h, tcell.RuneHLine, nil, st)
+	}
+
+	// corners
+	u.screen.SetContent(x, y, tcell.RuneULCorner, nil, st)
+	u.screen.SetContent(x+w, y, tcell.RuneURCorner, nil, st)
+	u.screen.SetContent(x, y+h, tcell.RuneLLCorner, nil, st)
+	u.screen.SetContent(x+w, y+h, tcell.RuneLRCorner, nil, st)
+
 }
