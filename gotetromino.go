@@ -101,5 +101,11 @@ const (
 )
 
 type UI interface {
+	SetPos(x, y int)
+	SetDimensions(w, h int)
+	Render()
+}
+
+type App interface {
 	Run()
 }

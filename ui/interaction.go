@@ -8,6 +8,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// TODO: Rename ui to app
 type ui struct {
 	screen           tcell.Screen
 	store            gotetromino.Store
@@ -19,7 +20,7 @@ type ui struct {
 	tickDuration     time.Duration
 }
 
-func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) gotetromino.UI {
+func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) gotetromino.App {
 	duration := 800 * time.Millisecond
 	ticker := time.NewTicker(duration)
 	interaction := make(chan gotetromino.Interaction)
