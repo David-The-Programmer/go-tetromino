@@ -59,7 +59,8 @@ func (u *ui) render(s gotetromino.State) {
 	cb.SetTitle("CONTROLS")
 	cb.SetTitleColour(tcell.ColorGrey)
 	keymaps := []string{
-		"esc - quit",
+		"esc - quit game",
+        "r - restart game",
 		fmt.Sprintf("%c - left", tcell.RuneLArrow),
 		fmt.Sprintf("%c - right", tcell.RuneRArrow),
 		fmt.Sprintf("%c - soft drop", tcell.RuneDArrow),
@@ -68,7 +69,7 @@ func (u *ui) render(s gotetromino.State) {
 		"z - rotate anti-clockwise",
 	}
 	cb.SetContentColWidths(1, 25, 1)
-	cb.SetContentRowHeights(1, 1, 1, 1, 1, 1, 1, 1)
+	cb.SetContentRowHeights(1, 1, 1, 1, 1, 1, 1, 1, 1)
 	for i := range keymaps {
 		km := newTextBox(u.screen)
 		km.SetText(keymaps[i])

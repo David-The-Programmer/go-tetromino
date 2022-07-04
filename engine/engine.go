@@ -450,10 +450,12 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Fix the spawn pos of tetromino
+// TODO: Make all board individual components
+// TODO: Text alignment of stats & controls
 // TODO: Fix clearing of lines
-// TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
+// TODO: Fix the spawn pos of tetromino
 // TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
+// TODO: Refactor UI to not use other UI components as throwaways
 // TODO: Finish having next tetromino
 // TODO: Finish reset of state
 // TODO: Refactor and simplify current store & key event listener to one event loop?
