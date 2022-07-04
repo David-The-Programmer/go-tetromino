@@ -451,6 +451,7 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 }
 
 // TODO: Fix the spawn pos of tetromino
+// TODO: Fix clearing of lines
 // TODO: Finish U.I (show scoring, next tetromino, instructions to restart game, game controls, etc)
 // TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
 // TODO: Finish having next tetromino

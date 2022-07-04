@@ -63,31 +63,6 @@ func (m *matrix) Render() {
 		blockX = m.x + 1
 		blockY += blockHeight
 	}
-
-	// render current tetromino
-	for row := 0; row < len(m.state.CurrentTetromino); row++ {
-		for col := 0; col < len(m.state.CurrentTetromino[row]); col++ {
-			matrixRow := m.state.CurrentTetrominoPos[0] + row
-			matrixCol := m.state.CurrentTetrominoPos[1] + col
-			if matrixRow < 0 || matrixRow > len(m.state.Matrix)-1 {
-				continue
-			}
-			if matrixCol < 0 || matrixCol > len(m.state.Matrix[0])-1 {
-				continue
-			}
-			if engine.Block(m.state.CurrentTetromino[row][col]) == engine.Space {
-				continue
-			}
-			tBlockX := m.x + 1 + (matrixCol * blockWidth)
-			tBlockY := m.y + 1 + (matrixRow * blockHeight)
-			b := newBlock(m.screen)
-			b.SetDimensions(blockWidth, blockHeight)
-			b.SetPos(tBlockX, tBlockY)
-			b.SetColour(colourForBlock(engine.Block(m.state.CurrentTetromino[row][col])))
-			b.Render()
-		}
-	}
-
 	// render ghost tetromino
 	for row := 0; row < len(m.state.CurrentTetromino); row++ {
 		for col := 0; col < len(m.state.CurrentTetromino[row]); col++ {
@@ -112,4 +87,27 @@ func (m *matrix) Render() {
 		}
 	}
 
+	// render current tetromino
+	for row := 0; row < len(m.state.CurrentTetromino); row++ {
+		for col := 0; col < len(m.state.CurrentTetromino[row]); col++ {
+			matrixRow := m.state.CurrentTetrominoPos[0] + row
+			matrixCol := m.state.CurrentTetrominoPos[1] + col
+			if matrixRow < 0 || matrixRow > len(m.state.Matrix)-1 {
+				continue
+			}
+			if matrixCol < 0 || matrixCol > len(m.state.Matrix[0])-1 {
+				continue
+			}
+			if engine.Block(m.state.CurrentTetromino[row][col]) == engine.Space {
+				continue
+			}
+			tBlockX := m.x + 1 + (matrixCol * blockWidth)
+			tBlockY := m.y + 1 + (matrixRow * blockHeight)
+			b := newBlock(m.screen)
+			b.SetDimensions(blockWidth, blockHeight)
+			b.SetPos(tBlockX, tBlockY)
+			b.SetColour(colourForBlock(engine.Block(m.state.CurrentTetromino[row][col])))
+			b.Render()
+		}
+	}
 }
