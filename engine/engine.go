@@ -221,13 +221,13 @@ func overlapExistingTBlock(s gotetromino.State) bool {
 	tMatrixRow := s.CurrentTetrominoPos[0]
 	tMatrixCol := s.CurrentTetrominoPos[1]
 	for r := 0; r < len(s.CurrentTetromino); r++ {
-		for c := 0; c < len(s.CurrentTetromino); c++ {
+		for c := 0; c < len(s.CurrentTetromino[r]); c++ {
 			if s.CurrentTetromino[r][c] == int(Space) {
 				continue
 			}
 			tBlockRow := tMatrixRow + r
 			tBlockCol := tMatrixCol + c
-			if tBlockRow > len(s.Matrix)-1 || tBlockCol < 0 || tBlockCol > len(s.Matrix[0])-1 {
+			if tBlockRow < 0 || tBlockRow > len(s.Matrix)-1 || tBlockCol < 0 || tBlockCol > len(s.Matrix[0])-1 {
 				continue
 			}
 			if s.Matrix[tBlockRow][tBlockCol] != int(Space) {
@@ -353,11 +353,9 @@ func over(s gotetromino.State) gotetromino.State {
 // empty slice is returned if no lines found
 func findLines(s gotetromino.State) []int {
 	rows := []int{}
-	// skip checking bottom boundary
-	for row := 0; row < len(s.Matrix)-1; row++ {
+	for row := 0; row < len(s.Matrix); row++ {
 		rowHasLine := true
-		// skip checking left & right boundaries
-		for col := 1; col < len(s.Matrix[row])-1; col++ {
+		for col := 0; col < len(s.Matrix[row]); col++ {
 			if s.Matrix[row][col] == int(Space) {
 				rowHasLine = false
 			}
