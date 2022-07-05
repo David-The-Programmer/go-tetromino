@@ -444,18 +444,30 @@ func incrementScore(s gotetromino.State, pts int) gotetromino.State {
 
 // tetrominoStartPos returns the starting position of a tetromino
 func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
+	nonSpaceRow := 0
+	nonSpaceFound := false
+	for row := 0; row < len(tetromino); row++ {
+		for col := 0; col < len(tetromino[row]); col++ {
+			if tetromino[row][col] != int(Space) {
+				nonSpaceFound = true
+				nonSpaceRow = row
+				break
+			}
+		}
+		if nonSpaceFound {
+			break
+		}
+	}
 	return []int{
-		0,
-		(len(matrix[0]) - 2 - len(tetromino)) / 2,
+		-nonSpaceRow,
+		(len(matrix[0]) - len(tetromino)) / 2,
 	}
 }
 
-// TODO: Make all board individual components
-// TODO: Fix the spawn pos of tetromino
-// TODO: Text alignment of stats & controls
 // TODO: Fix clearing of lines
 // TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
-// TODO: Refactor UI to not use other UI components as throwaways
+// TODO: Text alignment of stats & controls
+// TODO: Refactor UI to not use other UI components as throwaways, refactor matrix and add it to its own matrixboard
 // TODO: Finish having next tetromino
 // TODO: Finish reset of state
 // TODO: Refactor and simplify current store & key event listener to one event loop?
