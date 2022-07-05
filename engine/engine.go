@@ -451,9 +451,9 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 }
 
 // TODO: Make all board individual components
+// TODO: Fix the spawn pos of tetromino
 // TODO: Text alignment of stats & controls
 // TODO: Fix clearing of lines
-// TODO: Fix the spawn pos of tetromino
 // TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
 // TODO: Refactor UI to not use other UI components as throwaways
 // TODO: Finish having next tetromino

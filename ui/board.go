@@ -59,6 +59,10 @@ func (b *board) AddContent(component gotetromino.UI, gridRow, gridCol, rowSpan, 
 	b.content.AddComponent(component, gridRow, gridCol, rowSpan, colSpan)
 }
 
+func (b *board) GetContent(gridRow, gridCol int) gotetromino.UI {
+	return b.content.GetComponent(gridRow, gridCol)
+}
+
 func (b *board) Render() {
 	b.border.SetPos(b.x, b.y)
 	b.border.SetDimensions(b.w, b.h)

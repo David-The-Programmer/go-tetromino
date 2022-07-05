@@ -111,3 +111,13 @@ func (g *grid) AddComponent(component gotetromino.UI, gridRow, gridCol, rowSpan,
 		colSpan,
 	})
 }
+
+func (g *grid) GetComponent(gridRow, gridCol int) gotetromino.UI {
+	for i := range g.components {
+		c := g.components[i]
+		if c.gridRow == gridRow && c.gridCol == gridCol {
+			return c
+		}
+	}
+	return nil
+}
