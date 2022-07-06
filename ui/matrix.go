@@ -8,14 +8,34 @@ import (
 )
 
 type matrix struct {
-	x, y, w, h int
-	screen     tcell.Screen
-	state      gotetromino.State
+	*board
 }
 
-func newMatrix(sc tcell.Screen) *matrix {
+func newMatrix(sc tcell.Screen, s gotetromino.State) *matrix {
+	b := newBoard(sc)
+	b.SetBorderColour(tcell.ColorGrey)
+	b.SetTitle("Tetris")
+	b.SetTitleColour(tcell.ColorGrey)
+	matrixRows := len(s.Matrix)
+	matrixCols := len(s.Matrix[0])
+	rowHeights := []int{}
+	colWidths := []int{}
+	for row := 0; row < matrixRows; row++ {
+		rowHeights = append(rowHeights, 1)
+	}
+	b.SetContentRowHeights(rowHeights...)
+	for col := 0; col < matrixCols; col++ {
+		colWidths = append(colWidths, 1)
+	}
+	b.SetContentColWidths(colWidths...)
+	for row := 0; row < matrixRows; row++ {
+		for col := 0; col < matrixCols; col++ {
+			blk := newBlock(sc)
+			b.AddContent(blk, row, col, 1, 1)
+		}
+	}
 	return &matrix{
-		screen: sc,
+		board: b,
 	}
 }
 
@@ -30,84 +50,57 @@ func (m *matrix) SetDimensions(w, h int) {
 }
 
 func (m *matrix) SetState(s gotetromino.State) {
-	m.state = s
-}
-
-func (m *matrix) Render() {
-	// render border around matrix
-	mb := newBorder(m.screen)
-	mb.SetPos(m.x, m.y)
-	mb.SetDimensions(m.w, m.h)
-	mb.SetColour(tcell.ColorGrey)
-	mb.Render()
-
-	// render all locked blocks in the matrix
-	numRows := len(m.state.Matrix)
-	numCols := len(m.state.Matrix[0])
-	blockX := m.x + 1
-	blockY := m.y + 1
-	blockWidth := (m.w - 2) / numCols
-	blockHeight := (m.h - 2) / numRows
-	for row := 0; row < numRows; row++ {
-		for col := 0; col < numCols; col++ {
-			// TODO: Put Block type all in gotetromino.go instead
-			if engine.Block(m.state.Matrix[row][col]) != engine.Space {
-				b := newBlock(m.screen)
-				b.SetDimensions(blockWidth, blockHeight)
-				b.SetPos(blockX, blockY)
-				b.SetColour(colourForBlock(engine.Block(m.state.Matrix[row][col])))
-				b.Render()
-			}
-			blockX += blockWidth
-		}
-		blockX = m.x + 1
-		blockY += blockHeight
-	}
-	// render ghost tetromino
-	for row := 0; row < len(m.state.CurrentTetromino); row++ {
-		for col := 0; col < len(m.state.CurrentTetromino[row]); col++ {
-			matrixRow := m.state.GhostTetrominoPos[0] + row
-			matrixCol := m.state.GhostTetrominoPos[1] + col
-			if matrixRow < 0 || matrixRow > len(m.state.Matrix)-1 {
+	for row := 0; row < len(s.Matrix); row++ {
+		for col := 0; col < len(s.Matrix[row]); col++ {
+			blk := m.GetContent(row, col).(*gridComponent).UI.(*block)
+			if engine.Block(s.Matrix[row][col]) == engine.Space {
+				blk.Hide(true)
 				continue
 			}
-			if matrixCol < 0 || matrixCol > len(m.state.Matrix[0])-1 {
-				continue
-			}
-			if engine.Block(m.state.CurrentTetromino[row][col]) == engine.Space {
-				continue
-			}
-			tBlockX := m.x + 1 + (matrixCol * blockWidth)
-			tBlockY := m.y + 1 + (matrixRow * blockHeight)
-			b := newBlock(m.screen)
-			b.SetDimensions(blockWidth, blockHeight)
-			b.SetPos(tBlockX, tBlockY)
-			b.SetColour(tcell.ColorGray)
-			b.Render()
+			blk.Hide(false)
+			blk.SetColour(colourForBlock(engine.Block(s.Matrix[row][col])))
 		}
 	}
-
-	// render current tetromino
-	for row := 0; row < len(m.state.CurrentTetromino); row++ {
-		for col := 0; col < len(m.state.CurrentTetromino[row]); col++ {
-			matrixRow := m.state.CurrentTetrominoPos[0] + row
-			matrixCol := m.state.CurrentTetrominoPos[1] + col
-			if matrixRow < 0 || matrixRow > len(m.state.Matrix)-1 {
+	for row := 0; row < len(s.CurrentTetromino); row++ {
+		for col := 0; col < len(s.CurrentTetromino[row]); col++ {
+			matrixRow := s.GhostTetrominoPos[0] + row
+			matrixCol := s.GhostTetrominoPos[1] + col
+			if matrixRow < 0 || matrixRow > len(s.Matrix)-1 {
 				continue
 			}
-			if matrixCol < 0 || matrixCol > len(m.state.Matrix[0])-1 {
+			if matrixCol < 0 || matrixCol > len(s.Matrix[0])-1 {
 				continue
 			}
-			if engine.Block(m.state.CurrentTetromino[row][col]) == engine.Space {
+			if engine.Block(s.Matrix[matrixRow][matrixCol]) != engine.Space {
 				continue
 			}
-			tBlockX := m.x + 1 + (matrixCol * blockWidth)
-			tBlockY := m.y + 1 + (matrixRow * blockHeight)
-			b := newBlock(m.screen)
-			b.SetDimensions(blockWidth, blockHeight)
-			b.SetPos(tBlockX, tBlockY)
-			b.SetColour(colourForBlock(engine.Block(m.state.CurrentTetromino[row][col])))
-			b.Render()
+			blk := m.GetContent(matrixRow, matrixCol).(*gridComponent).UI.(*block)
+			if engine.Block(s.CurrentTetromino[row][col]) == engine.Space {
+				continue
+			}
+			blk.Hide(false)
+			blk.SetColour(tcell.ColorGrey)
+		}
+	}
+	for row := 0; row < len(s.CurrentTetromino); row++ {
+		for col := 0; col < len(s.CurrentTetromino[row]); col++ {
+			matrixRow := s.CurrentTetrominoPos[0] + row
+			matrixCol := s.CurrentTetrominoPos[1] + col
+			if matrixRow < 0 || matrixRow > len(s.Matrix)-1 {
+				continue
+			}
+			if matrixCol < 0 || matrixCol > len(s.Matrix[0])-1 {
+				continue
+			}
+			if engine.Block(s.Matrix[matrixRow][matrixCol]) != engine.Space {
+				continue
+			}
+			blk := m.GetContent(matrixRow, matrixCol).(*gridComponent).UI.(*block)
+			if engine.Block(s.CurrentTetromino[row][col]) == engine.Space {
+				continue
+			}
+			blk.Hide(false)
+			blk.SetColour(colourForBlock(engine.Block(s.CurrentTetromino[row][col])))
 		}
 	}
 }

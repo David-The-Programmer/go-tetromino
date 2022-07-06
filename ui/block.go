@@ -8,6 +8,7 @@ type block struct {
 	screen     tcell.Screen
 	x, y, w, h int
 	c          tcell.Color
+	hide       bool
 }
 
 func newBlock(sc tcell.Screen) *block {
@@ -30,7 +31,14 @@ func (b *block) SetColour(c tcell.Color) {
 	b.c = c
 }
 
+func (b *block) Hide(v bool) {
+	b.hide = v
+}
+
 func (b *block) Render() {
+	if b.hide {
+		return
+	}
 	cellX := b.x
 	cellY := b.y
 	st := tcell.StyleDefault.Foreground(b.c).Background(b.c)

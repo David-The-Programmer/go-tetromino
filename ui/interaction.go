@@ -18,6 +18,7 @@ type ui struct {
 	state            chan gotetromino.State
 	ticker           *time.Ticker
 	tickDuration     time.Duration
+	renderer         *renderer
 }
 
 func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) gotetromino.App {
@@ -26,6 +27,7 @@ func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) g
 	interaction := make(chan gotetromino.Interaction)
 	action := make(chan gotetromino.Action)
 	state := make(chan gotetromino.State)
+	renderer := newRenderer(sc, s.State())
 	return &ui{
 		screen:           sc,
 		store:            s,
@@ -35,6 +37,7 @@ func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) g
 		state:            state,
 		ticker:           ticker,
 		tickDuration:     duration,
+		renderer:         renderer,
 	}
 }
 

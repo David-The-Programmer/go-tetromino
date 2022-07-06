@@ -1,8 +1,6 @@
 package ui
 
 import (
-	// "log"
-
 	"log"
 
 	gotetromino "github.com/David-The-Programmer/go-tetromino"

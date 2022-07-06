@@ -462,8 +462,6 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Fix clearing of lines
-// TODO: Fix rotation such that pieces against the boundary can still be rotated (wall kickback)
 // TODO: Text alignment of stats & controls
 // TODO: Refactor UI to not use other UI components as throwaways, refactor matrix and add it to its own matrixboard
 // TODO: Finish having next tetromino

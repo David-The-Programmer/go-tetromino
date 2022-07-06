@@ -17,25 +17,8 @@ import (
 
 func (u *ui) render(s gotetromino.State) {
 	u.screen.Clear()
-
-	g := newGrid()
-	g.SetPos(0, 0)
-	g.SetDimensions(70, 22)
-	g.SetGridRowHeights(1, 1)
-	g.SetGridColWidths(19, 22, 29)
-
-	m := newMatrix(u.screen)
-	m.SetState(s)
-
-	sb := newStatsBoard(u.screen)
-	sb.SetStats(s)
-
-	cb := newControlsBoard(u.screen)
-
-	g.AddComponent(sb, 0, 0, 1, 1)
-	g.AddComponent(m, 0, 1, 2, 1)
-	g.AddComponent(cb, 1, 2, 1, 1)
-	g.Render()
+	u.renderer.SetState(s)
+	u.renderer.Render()
 
 	if s.ClearedPrevLevel {
 		// make animation faster as more levels are cleared
