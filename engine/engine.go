@@ -380,7 +380,7 @@ func clearLines(s gotetromino.State, rows []int) gotetromino.State {
 	state := duplicate(s)
 	for row := rows[0]; row <= rows[len(rows)-1]; row++ {
 		for r := row; r >= 0; r-- {
-			for col := 1; col < len(state.Matrix[row])-1; col++ {
+			for col := 0; col < len(state.Matrix[row]); col++ {
 				if r == 0 {
 					state.Matrix[r][col] = int(Space)
 					continue
