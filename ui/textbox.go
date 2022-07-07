@@ -4,11 +4,19 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+type textAlignment int
+
+const (
+	left textAlignment = iota
+	right
+)
+
 type textBox struct {
 	screen     tcell.Screen
 	x, y, w, h int
 	c          tcell.Color
 	text       string
+	ta         textAlignment
 }
 
 func newTextBox(sc tcell.Screen) *textBox {
@@ -31,6 +39,10 @@ func (t *textBox) SetText(text string) {
 	t.text = text
 }
 
+func (t *textBox) AlignText(ta textAlignment) {
+	t.ta = ta
+}
+
 func (t *textBox) GetText() string {
 	return t.text
 }
@@ -40,14 +52,18 @@ func (t *textBox) SetColour(c tcell.Color) {
 }
 
 func (t *textBox) Render() {
-	cellX := t.x
-	cellY := t.y
 	st := tcell.StyleDefault.Foreground(t.c)
 
-	// text would be left aligned for now
-	// TODO: Make different alignments for text
 	text := []rune(t.text)
 	for row := 0; row < t.h; row++ {
+		cellX := t.x
+		if t.ta == right {
+			xOffset := t.w - (len(text) - 1)
+			if xOffset > 0 {
+				cellX += xOffset
+			}
+		}
+		cellY := t.y + row
 		for col := 0; col < t.w; col++ {
 			i := row*t.w + col
 			if i > len(text)-1 {
@@ -56,8 +72,6 @@ func (t *textBox) Render() {
 			t.screen.SetContent(cellX, cellY, text[i], nil, st)
 			cellX += 1
 		}
-		cellX = t.x
-		cellY += 1
 	}
 	t.screen.Show()
 }

@@ -462,11 +462,9 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Text alignment of stats & controls
-// TODO: Refactor UI to not use other UI components as throwaways, refactor matrix and add it to its own matrixboard
 // TODO: Finish having next tetromino
 // TODO: Finish reset of state
+// TODO: Need to fix bug where game freezes after too quick of key presses (need delay to ignore keypresses for certain period), could be ghost tetromino piece + rotation that causes freeze
 // TODO: Refactor and simplify current store & key event listener to one event loop?
-// TODO: Need to fix bug where game freezes after too quick of key presses
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field

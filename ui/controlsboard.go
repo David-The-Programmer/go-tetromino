@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -17,16 +15,26 @@ func newControlsBoard(sc tcell.Screen) *controlsBoard {
 	cb.SetTitleColour(tcell.ColorGrey)
 
 	controls := []string{
-		"esc - quit game",
-		"r - restart game",
-		fmt.Sprintf("%c - left", tcell.RuneLArrow),
-		fmt.Sprintf("%c - right", tcell.RuneRArrow),
-		fmt.Sprintf("%c - soft drop", tcell.RuneDArrow),
-		"space - hard drop",
-		"x - rotate clockwise",
-		"z - rotate anti-clockwise",
+		"Quit",
+		"Restart",
+		"Left",
+		"Right",
+		"Soft drop",
+		"Hard drop",
+		"Rotate left",
+		"Rotate right",
 	}
-	cb.SetContentColWidths(1)
+	keys := []string{
+		"esc",
+		"r",
+		string(tcell.RuneLArrow),
+		string(tcell.RuneRArrow),
+		string(tcell.RuneDArrow),
+		"spacebar",
+		"z",
+		"x",
+	}
+	cb.SetContentColWidths(1, 1)
 	rowHeights := []int{}
 	for range controls {
 		rowHeights = append(rowHeights, 1)
@@ -37,6 +45,13 @@ func newControlsBoard(sc tcell.Screen) *controlsBoard {
 		tb.SetText(controls[i])
 		tb.SetColour(tcell.ColorGrey)
 		cb.AddContent(tb, i, 0, 1, 1)
+	}
+	for i := range keys {
+		tb := newTextBox(sc)
+		tb.SetText(keys[i])
+		tb.AlignText(right)
+		tb.SetColour(tcell.ColorGrey)
+		cb.AddContent(tb, i, 1, 1, 1)
 	}
 	return &controlsBoard{
 		board: cb,
