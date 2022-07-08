@@ -465,7 +465,6 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 }
 
 // TODO: Need to fix bug where game freezes after too quick of key presses (need delay to ignore keypresses for certain period), could be ghost tetromino piece + rotation that causes freeze
-// TODO: Fix bug for level score not incrementing after clearing 10 lines
 // TODO: Refactor and simplify current store & key event listener to one event loop?
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field
