@@ -51,8 +51,16 @@ func (b *board) SetContentRowHeights(rowHeights ...int) {
 	b.content.SetGridRowHeights(rowHeights...)
 }
 
+func (b *board) GetContentRowHeights() []int {
+	return b.content.GetGridRowHeights()
+}
+
 func (b *board) SetContentColWidths(colWidths ...int) {
 	b.content.SetGridColWidths(colWidths...)
+}
+
+func (b *board) GetContentColWidths() []int {
+	return b.content.GetGridColWidths()
 }
 
 func (b *board) AddContent(component gotetromino.UI, gridRow, gridCol, rowSpan, colSpan int) {

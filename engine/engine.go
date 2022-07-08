@@ -16,6 +16,7 @@ func New() gotetromino.Engine {
 	)
 	e := engine{}
 	e.state = emptyMatrix(e.state, numMatrixRows, numMatrixCols)
+	e.state = generateBag(e.state)
 	e.state = spawnTetromino(e.state)
 	e.state = calcGhostTetrominoPos(e.state)
 	return &e
@@ -152,8 +153,10 @@ func (e *engine) Step(a gotetromino.Action) {
 
 // Reset resets the state of the game back to its initial state
 func (e *engine) Reset() {
-	e.state = spawnTetromino(e.state)
 	e.state = emptyMatrix(e.state, len(e.state.Matrix), len(e.state.Matrix[0]))
+	// must re-generate bag before spawning tetromino
+	e.state = generateBag(e.state)
+	e.state = spawnTetromino(e.state)
 	e.state = calcGhostTetrominoPos(e.state)
 	e.state.Score = 0
 	e.state.Over = false
@@ -161,7 +164,6 @@ func (e *engine) Reset() {
 	e.state.ClearedPrevLevel = false
 	e.state.LineCount = 0
 	e.state.ClearedLinesRows = nil
-	e.state.Bag = nil
 }
 
 // leftBoundaryExceeded returns true if CurrentTetrominoPos exceeds the left boundary
@@ -321,10 +323,10 @@ func moveTetromino(s gotetromino.State, numRows int, numCols int) gotetromino.St
 // spawnTetromino returns a new state, which comprises of the given state that has new tetromino is spawned
 func spawnTetromino(s gotetromino.State) gotetromino.State {
 	state := duplicate(s)
+	state, tetromino := pickTetromino(state)
 	if len(state.Bag) == 0 {
 		state = generateBag(state)
 	}
-	state, tetromino := pickTetromino(state)
 	state.CurrentTetromino = tetromino
 	state.CurrentTetrominoPos = tetrominoStartPos(state.CurrentTetromino, state.Matrix)
 	return state
@@ -462,9 +464,8 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Finish having next tetromino
-// TODO: Finish reset of state
 // TODO: Need to fix bug where game freezes after too quick of key presses (need delay to ignore keypresses for certain period), could be ghost tetromino piece + rotation that causes freeze
+// TODO: Fix bug for level score not incrementing after clearing 10 lines
 // TODO: Refactor and simplify current store & key event listener to one event loop?
 
 // TODO: Make comment terms that relate to the code be of the specific constant/field

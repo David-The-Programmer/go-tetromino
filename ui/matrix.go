@@ -39,16 +39,6 @@ func newMatrix(sc tcell.Screen, s gotetromino.State) *matrix {
 	}
 }
 
-func (m *matrix) SetPos(x, y int) {
-	m.x = x
-	m.y = y
-}
-
-func (m *matrix) SetDimensions(w, h int) {
-	m.w = w
-	m.h = h
-}
-
 func (m *matrix) SetState(s gotetromino.State) {
 	for row := 0; row < len(s.Matrix); row++ {
 		for col := 0; col < len(s.Matrix[row]); col++ {

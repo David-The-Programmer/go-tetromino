@@ -96,8 +96,16 @@ func (g *grid) SetGridRowHeights(rowHeights ...int) {
 	g.rowHeights = rowHeights
 }
 
+func (g *grid) GetGridRowHeights() []int {
+	return g.rowHeights
+}
+
 func (g *grid) SetGridColWidths(colWidths ...int) {
 	g.colWidths = colWidths
+}
+
+func (g *grid) GetGridColWidths() []int {
+	return g.colWidths
 }
 
 func (g *grid) AddComponent(component gotetromino.UI, gridRow, gridCol, rowSpan, colSpan int) {
