@@ -8,90 +8,75 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-// TODO: Rename ui to app
-type ui struct {
-	screen           tcell.Screen
-	store            gotetromino.Store
-	keyEventListener gotetromino.KeyEventListener
-	interaction      chan gotetromino.Interaction
-	action           chan gotetromino.Action
-	state            chan gotetromino.State
-	ticker           *time.Ticker
-	tickDuration     time.Duration
-	renderer         *renderer
+type app struct {
+	screen       tcell.Screen
+	engine       gotetromino.Engine
+	ticker       *time.Ticker
+	tickDuration time.Duration
+	renderer     *renderer
 }
 
-func New(sc tcell.Screen, s gotetromino.Store, k gotetromino.KeyEventListener) gotetromino.App {
+func New(sc tcell.Screen, e gotetromino.Engine) gotetromino.App {
 	duration := 800 * time.Millisecond
 	ticker := time.NewTicker(duration)
-	interaction := make(chan gotetromino.Interaction)
-	action := make(chan gotetromino.Action)
-	state := make(chan gotetromino.State)
-	renderer := newRenderer(sc, s.State())
-	return &ui{
-		screen:           sc,
-		store:            s,
-		keyEventListener: k,
-		interaction:      interaction,
-		action:           action,
-		state:            state,
-		ticker:           ticker,
-		tickDuration:     duration,
-		renderer:         renderer,
+	renderer := newRenderer(sc, e.State())
+	return &app{
+		screen:       sc,
+		engine:       e,
+		ticker:       ticker,
+		tickDuration: duration,
+		renderer:     renderer,
 	}
 }
 
-func (u *ui) Run() {
-	u.store.Attach(u)
-	u.keyEventListener.Attach(u)
-
-	u.store.Start()
-	u.keyEventListener.Start()
-
+func (a *app) Run() {
+	eventLoop := make(chan tcell.Event)
+	exit := make(chan struct{})
+	go a.screen.ChannelEvents(eventLoop, exit)
+	// render starting state
+	a.render(a.engine.State())
 	for {
 		select {
-		case i := <-u.interaction:
-			if i == gotetromino.Exit {
-				u.keyEventListener.Stop()
-				u.store.Stop()
-				u.screen.Fini()
-				return
+		case ev := <-eventLoop:
+			switch ev := ev.(type) {
+			case *tcell.EventKey:
+				switch ev.Key() {
+				case tcell.KeyEsc:
+					a.screen.Fini()
+					close(exit)
+					return
+				case tcell.KeyRune:
+					switch ev.Rune() {
+					case 'r':
+						if a.engine.State().Over {
+							a.engine.Reset()
+						}
+						a.render(a.engine.State())
+					case 'x':
+						a.engine.Step(gotetromino.RotateCW)
+						a.render(a.engine.State())
+					case 'z':
+						a.engine.Step(gotetromino.RotateACW)
+						a.render(a.engine.State())
+					case ' ':
+						a.engine.Step(gotetromino.HardDrop)
+						a.render(a.engine.State())
+					}
+				case tcell.KeyDown:
+					a.engine.Step(gotetromino.SoftDrop)
+					a.render(a.engine.State())
+				case tcell.KeyLeft:
+					a.engine.Step(gotetromino.Left)
+					a.render(a.engine.State())
+				case tcell.KeyRight:
+					a.engine.Step(gotetromino.Right)
+					a.render(a.engine.State())
+				}
 			}
-			if i == gotetromino.Restart && u.store.State().Over {
-				u.store.Reset()
-			}
-		case a := <-u.action:
-			u.store.Step(a)
-		case <-u.ticker.C:
-			u.store.Step(gotetromino.None)
-		case s := <-u.state:
-			u.render(s)
+		case <-a.ticker.C:
+			a.engine.Step(gotetromino.None)
+			a.render(a.engine.State())
 		}
 	}
 
-}
-
-func (u *ui) HandleNewKey(k gotetromino.Key) {
-	switch k {
-	case gotetromino.Esc:
-		u.interaction <- gotetromino.Exit
-	case gotetromino.R:
-		u.interaction <- gotetromino.Restart
-	case gotetromino.X:
-		u.action <- gotetromino.RotateCW
-	case gotetromino.Z:
-		u.action <- gotetromino.RotateACW
-	case gotetromino.SpaceBar:
-		u.action <- gotetromino.HardDrop
-	case gotetromino.DownArrow:
-		u.action <- gotetromino.SoftDrop
-	case gotetromino.LeftArrow:
-		u.action <- gotetromino.Left
-	case gotetromino.RightArrow:
-		u.action <- gotetromino.Right
-	}
-}
-
-func (u *ui) HandleNewState(s gotetromino.State) {
-	u.state <- s
 }

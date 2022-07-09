@@ -33,52 +33,6 @@ type State struct {
 	GhostTetrominoPos []int
 }
 
-type Service interface {
-	Start()
-	Stop()
-}
-
-type StateEventListener interface {
-	Service
-	Attach(h StateEventHandler)
-	Detach(h StateEventHandler)
-	Publish()
-}
-
-type StateEventHandler interface {
-	HandleNewState(s State)
-}
-
-// Store manages changes to the state
-type Store interface {
-	Engine
-	StateEventListener
-}
-
-type KeyEventListener interface {
-	Service
-	Attach(h KeyEventHandler)
-	Detach(h KeyEventHandler)
-	Publish()
-}
-
-type KeyEventHandler interface {
-	HandleNewKey(k Key)
-}
-
-type Key int
-
-const (
-	Esc Key = iota
-	DownArrow
-	LeftArrow
-	RightArrow
-	SpaceBar
-	R
-	X
-	Z
-)
-
 // Action is the in-game action a player makes to play the tetris
 type Action int
 
@@ -90,14 +44,6 @@ const (
 	Right
 	RotateCW
 	RotateACW
-)
-
-// Interaction is the action a user does to use the game app
-type Interaction int
-
-const (
-	Exit Interaction = iota
-	Restart
 )
 
 type UI interface {

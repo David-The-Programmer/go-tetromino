@@ -6,26 +6,17 @@ import (
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 )
 
-// const (
-// 	matrixWidth       = 20
-// 	matrixHeight      = 20
-// 	matrixBoardWidth  = matrixWidth + 2*borderThickness
-// 	matrixBoardHeight = matrixHeight + 2*borderThickness
-// 	statsBoardWidth   = matrixBoardWidth
-// 	statsBoardHeight  = 2 + 2*borderThickness
-// )
-
-func (u *ui) render(s gotetromino.State) {
-	u.screen.Clear()
-	u.renderer.SetState(s)
-	u.renderer.Render()
+func (a *app) render(s gotetromino.State) {
+	a.screen.Clear()
+	a.renderer.SetState(s)
+	a.renderer.Render()
 
 	if s.ClearedPrevLevel {
 		// make animation faster as more levels are cleared
 		// TODO: Refactor limiting animation speed
-		if u.tickDuration > 80*time.Millisecond {
-			u.tickDuration = u.tickDuration - (80 * time.Millisecond)
-			u.ticker.Reset(u.tickDuration)
+		if a.tickDuration > 80*time.Millisecond {
+			a.tickDuration = a.tickDuration - (80 * time.Millisecond)
+			a.ticker.Reset(a.tickDuration)
 		}
 	}
 }

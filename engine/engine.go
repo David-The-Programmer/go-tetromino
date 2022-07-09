@@ -464,7 +464,7 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Need to fix bug where game freezes after too quick of key presses (need delay to ignore keypresses for certain period), could be ghost tetromino piece + rotation that causes freeze
-// TODO: Refactor and simplify current store & key event listener to one event loop?
-
+// TODO: Fix constant refreshing so that no need to call screen.clear
+// TODO: Need pause, pause screen
+// TODO: Need game over screen
 // TODO: Make comment terms that relate to the code be of the specific constant/field

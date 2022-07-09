@@ -5,8 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/David-The-Programmer/go-tetromino/event/key"
-	"github.com/David-The-Programmer/go-tetromino/store"
+	"github.com/David-The-Programmer/go-tetromino/engine"
 	"github.com/David-The-Programmer/go-tetromino/ui"
 
 	"github.com/gdamore/tcell/v2"
@@ -21,8 +20,7 @@ func main() {
 	if err = screen.Init(); err != nil {
 		log.Panic(err)
 	}
-	store := store.New()
-	keyEventListener := key.NewListener(screen)
-	ui := ui.New(screen, store, keyEventListener)
+	engine := engine.New()
+	ui := ui.New(screen, engine)
 	ui.Run()
 }
