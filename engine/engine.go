@@ -412,7 +412,7 @@ func incrementLineCount(s gotetromino.State, numLinesCleared int) gotetromino.St
 // clearedLevel return true if the current level of the given state has been cleared
 func clearedLevel(s gotetromino.State) bool {
 	const linesToClear = 10
-	return len(s.ClearedLinesRows) != 0 && s.LineCount%linesToClear == 0 && s.LineCount != 0
+	return (s.LineCount/linesToClear) - s.Level == 1
 }
 
 // setClearedPrevLevel sets the value of the ClearedPrevLevel flag field of the given state
