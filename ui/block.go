@@ -36,15 +36,17 @@ func (b *block) Hide(v bool) {
 }
 
 func (b *block) Render() {
-	if b.hide {
-		return
-	}
 	cellX := b.x
 	cellY := b.y
-	st := tcell.StyleDefault.Foreground(b.c).Background(b.c)
+	st := tcell.StyleDefault.Foreground(b.c)
 	for j := 0; j < b.h; j++ {
 		for i := 0; i < b.w; i++ {
-			b.screen.SetContent(cellX, cellY, tcell.RuneBlock, nil, st)
+			char := ' '
+			if !b.hide {
+				char = tcell.RuneBlock
+				st = st.Background(b.c)
+			}
+			b.screen.SetContent(cellX, cellY, char, nil, st)
 			cellX += 1
 		}
 		cellX = b.x

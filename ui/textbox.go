@@ -53,6 +53,12 @@ func (t *textBox) SetColour(c tcell.Color) {
 
 func (t *textBox) Render() {
 	st := tcell.StyleDefault.Foreground(t.c)
+	// clear all previous text before rendering new text
+	for row := 0; row < t.h; row++ {
+		for col := 0; col < t.w; col++ {
+			t.screen.SetContent(t.x+col, t.y+row, ' ', nil, st)
+		}
+	}
 
 	text := []rune(t.text)
 	for row := 0; row < t.h; row++ {

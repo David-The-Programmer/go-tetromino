@@ -464,7 +464,6 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 	}
 }
 
-// TODO: Fix constant refreshing so that no need to call screen.clear
 // TODO: Need pause, pause screen
 // TODO: Need game over screen
 // TODO: Make comment terms that relate to the code be of the specific constant/field

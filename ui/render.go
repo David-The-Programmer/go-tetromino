@@ -7,7 +7,6 @@ import (
 )
 
 func (a *app) render(s gotetromino.State) {
-	a.screen.Clear()
 	a.renderer.SetState(s)
 	a.renderer.Render()
 
