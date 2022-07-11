@@ -60,13 +60,13 @@ func (e *engine) Step(a gotetromino.Action) {
 			s = setClearedPrevLevel(s, true)
 			s = levelUp(s)
 		}
-		temp := spawnTetromino(s)
-		// if unable to spawn new tetromino due to existing pieces already there, game is over
-		if overlapExistingTBlock(temp) {
+		// as long as first row of matrix contains a non space block, game is over
+		if !matrixRowEmpty(s, 0) {
 			s = over(s)
-		} else {
-			s = temp
+			e.state = s
+			break
 		}
+		s = spawnTetromino(s)
 		e.state = s
 	case gotetromino.SoftDrop:
 		const maxSteps = 2
@@ -90,13 +90,13 @@ func (e *engine) Step(a gotetromino.Action) {
 				s = setClearedPrevLevel(s, true)
 				s = levelUp(s)
 			}
-			temp := spawnTetromino(s)
-			// if unable to spawn new tetromino due to existing pieces already there, game is over
-			if overlapExistingTBlock(temp) {
+			// as long as first row of matrix contains a non space block, game is over
+			if !matrixRowEmpty(s, 0) {
 				s = over(s)
-			} else {
-				s = temp
+				e.state = s
+				break
 			}
+			s = spawnTetromino(s)
 		}
 		e.state = s
 	case gotetromino.HardDrop:
@@ -119,13 +119,13 @@ func (e *engine) Step(a gotetromino.Action) {
 			s = setClearedPrevLevel(s, true)
 			s = levelUp(s)
 		}
-		temp := spawnTetromino(s)
-		// if unable to spawn new tetromino due to existing pieces already there, game is over
-		if overlapExistingTBlock(temp) {
+		// as long as first row of matrix contains a non space block, game is over
+		if !matrixRowEmpty(s, 0) {
 			s = over(s)
-		} else {
-			s = temp
+			e.state = s
+			break
 		}
+		s = spawnTetromino(s)
 		e.state = s
 	case gotetromino.Left:
 		s = moveTetromino(s, 0, -1)
@@ -238,6 +238,16 @@ func overlapExistingTBlock(s gotetromino.State) bool {
 		}
 	}
 	return false
+}
+
+// matrixRowEmpty returns true if specified row in matrix contains no tetromino blocks
+func matrixRowEmpty(s gotetromino.State, row int) bool {
+	for col := 0; col < len(s.Matrix[row]); col++ {
+		if Block(s.Matrix[row][col]) != Space {
+			return false
+		}
+	}
+	return true
 }
 
 // duplicate returns a deep copy of the given state
@@ -412,7 +422,7 @@ func incrementLineCount(s gotetromino.State, numLinesCleared int) gotetromino.St
 // clearedLevel return true if the current level of the given state has been cleared
 func clearedLevel(s gotetromino.State) bool {
 	const linesToClear = 10
-	return (s.LineCount/linesToClear) - s.Level == 1
+	return (s.LineCount/linesToClear)-s.Level == 1
 }
 
 // setClearedPrevLevel sets the value of the ClearedPrevLevel flag field of the given state

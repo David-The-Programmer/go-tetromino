@@ -9,6 +9,7 @@ type textAlignment int
 const (
 	left textAlignment = iota
 	right
+	center
 )
 
 type textBox struct {
@@ -68,6 +69,13 @@ func (t *textBox) Render() {
 			if xOffset > 0 {
 				cellX += xOffset
 			}
+		}
+		if t.ta == center {
+			xOffset := (t.w - (len(text) - 1)) / 2
+			if xOffset > 0 {
+				cellX += xOffset
+			}
+
 		}
 		cellY := t.y + row
 		for col := 0; col < t.w; col++ {

@@ -50,6 +50,7 @@ func (a *app) Run() {
 					case 'r':
 						if a.engine.State().Over {
 							a.engine.Reset()
+							a.ticker.Reset(a.tickDuration)
 						}
 						a.render(a.engine.State())
 					case 'x':
@@ -74,8 +75,10 @@ func (a *app) Run() {
 				}
 			}
 		case <-a.ticker.C:
-			a.engine.Step(gotetromino.None)
-			a.render(a.engine.State())
+			if !a.engine.State().Over {
+				a.engine.Step(gotetromino.None)
+				a.render(a.engine.State())
+			}
 		}
 	}
 
