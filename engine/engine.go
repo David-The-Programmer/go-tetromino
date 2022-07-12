@@ -34,6 +34,9 @@ func (e *engine) Step(a gotetromino.Action) {
 	if e.state.Over {
 		return
 	}
+	if e.state.Reset {
+		e.state.Reset = false
+	}
 	s := duplicate(e.state)
 	s = setClearedLinesRows(s, nil)
 	s = setClearedPrevLevel(s, false)
@@ -164,6 +167,7 @@ func (e *engine) Reset() {
 	e.state.ClearedPrevLevel = false
 	e.state.LineCount = 0
 	e.state.ClearedLinesRows = nil
+	e.state.Reset = true
 }
 
 // leftBoundaryExceeded returns true if CurrentTetrominoPos exceeds the left boundary
@@ -278,6 +282,7 @@ func duplicate(s gotetromino.State) gotetromino.State {
 	state.ClearedLinesRows = append([]int{}, s.ClearedLinesRows...)
 	state.Bag = append([][][]int{}, s.Bag...)
 	state.GhostTetrominoPos = append([]int{}, s.GhostTetrominoPos...)
+	state.Reset = s.Reset
 
 	return state
 }
@@ -473,7 +478,3 @@ func tetrominoStartPos(tetromino [][]int, matrix [][]int) []int {
 		(len(matrix[0]) - len(tetromino)) / 2,
 	}
 }
-
-// TODO: Need pause, pause screen
-// TODO: Need game over screen
-// TODO: Make comment terms that relate to the code be of the specific constant/field

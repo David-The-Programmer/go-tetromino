@@ -31,6 +31,8 @@ type State struct {
 	Bag [][][]int
 	// GhostTetrominoPos reflects the position of the CurrentTetromino after it is drop from its current position
 	GhostTetrominoPos []int
+	// Reset is true if game was reset
+	Reset bool
 }
 
 // Action is the in-game action a player makes to play the tetris

@@ -1,31 +1,23 @@
 package ui
 
 import (
-	"time"
-
 	gotetromino "github.com/David-The-Programmer/go-tetromino"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 type app struct {
-	screen       tcell.Screen
-	engine       gotetromino.Engine
-	ticker       *time.Ticker
-	tickDuration time.Duration
-	renderer     *renderer
+	screen   tcell.Screen
+	engine   gotetromino.Engine
+	renderer *renderer
 }
 
 func New(sc tcell.Screen, e gotetromino.Engine) gotetromino.App {
-	duration := 800 * time.Millisecond
-	ticker := time.NewTicker(duration)
 	renderer := newRenderer(sc, e.State())
 	return &app{
-		screen:       sc,
-		engine:       e,
-		ticker:       ticker,
-		tickDuration: duration,
-		renderer:     renderer,
+		screen:   sc,
+		engine:   e,
+		renderer: renderer,
 	}
 }
 
@@ -50,7 +42,6 @@ func (a *app) Run() {
 					case 'r':
 						if a.engine.State().Over {
 							a.engine.Reset()
-							a.ticker.Reset(a.tickDuration)
 						}
 						a.render(a.engine.State())
 					case 'x':
@@ -74,7 +65,7 @@ func (a *app) Run() {
 					a.render(a.engine.State())
 				}
 			}
-		case <-a.ticker.C:
+		case <-a.renderer.ticker.C:
 			if !a.engine.State().Over {
 				a.engine.Step(gotetromino.None)
 				a.render(a.engine.State())
@@ -87,13 +78,4 @@ func (a *app) Run() {
 func (a *app) render(s gotetromino.State) {
 	a.renderer.SetState(s)
 	a.renderer.Render()
-
-	if s.ClearedPrevLevel {
-		// make animation faster as more levels are cleared
-		// TODO: Refactor limiting animation speed
-		if a.tickDuration > 80*time.Millisecond {
-			a.tickDuration = a.tickDuration - (80 * time.Millisecond)
-			a.ticker.Reset(a.tickDuration)
-		}
-	}
 }

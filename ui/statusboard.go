@@ -44,7 +44,7 @@ func (sb *statusBoard) SetStatus(s gotetromino.State) {
 		return
 	}
 	// Let player know that game has started if game was restarted after game over
-	if sb.latestStatusMsg() == "Game Over..." {
+	if s.Reset {
 		sb.sendStatusMsg("Game Started...")
 	}
 	numLinesCleared := len(s.ClearedLinesRows)
